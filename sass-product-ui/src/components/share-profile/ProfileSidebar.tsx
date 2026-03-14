@@ -49,7 +49,7 @@ const ProfileSidebar = ({
         </h2>
         <span className="inline-block mt-1.5 text-xs font-bold uppercase
           tracking-wider bg-accent-tint text-accent px-3 py-1 rounded-full">
-          {formatLabel(basic.maritalStatus)}
+          {formatLabel(basic.devType)}
         </span>
       </div>
 
