@@ -8,9 +8,90 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>sass-product-ui</title>
+
+    <!-- ① Prevent flash of wrong theme — runs before React mounts -->
+    <script>
+      (function () {
+        const saved = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+
+    <!-- ② Toggle button styles -->
+    <style>
+      #theme-toggle {
+        position:        fixed;
+        bottom:          24px;
+        right:           24px;
+        z-index:         9999;
+        width:           44px;
+        height:          44px;
+        border-radius:   50%;
+        border:          1px solid #E4E4E7;
+        background:      #FFFFFF;
+        cursor:          pointer;
+        display:         flex;
+        align-items:     center;
+        justify-content: center;
+        box-shadow:      0 4px 12px rgba(0,0,0,0.10);
+        font-size:       18px;
+        transition:      background 250ms ease, border-color 250ms ease, box-shadow 250ms ease;
+      }
+      html.dark #theme-toggle {
+        background:   #18181B;
+        border-color: #2A2A2F;
+        box-shadow:   0 4px 12px rgba(0,0,0,0.40);
+      }
+      #theme-toggle::after {
+        content:        attr(data-tooltip);
+        position:       absolute;
+        bottom:         52px;
+        right:          0;
+        background:     #18181B;
+        color:          #F0F0F4;
+        font-family:    'Geist', system-ui, sans-serif;
+        font-size:      11px;
+        font-weight:    500;
+        padding:        4px 10px;
+        border-radius:  6px;
+        white-space:    nowrap;
+        opacity:        0;
+        pointer-events: none;
+        transition:     opacity 150ms ease;
+      }
+      #theme-toggle:hover::after { opacity: 1; }
+    </style>
   </head>
+
   <body>
     <div id="root"></div>
+
+    <!-- ③ Toggle button — REMOVE IN PRODUCTION, use DarkModeToggle.tsx instead -->
+    <button
+      id="theme-toggle"
+      data-tooltip="Toggle dark mode"
+      aria-label="Toggle dark mode"
+    >
+      <span id="theme-icon"></span>
+    </button>
+
+    <!-- ④ Toggle script -->
+    <script>
+      const icon = document.getElementById('theme-icon');
+
+      // Set correct icon on initial load
+      icon.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+
+      document.getElementById('theme-toggle').addEventListener('click', function () {
+        const isDark = document.documentElement.classList.toggle('dark');
+        icon.textContent = isDark ? '☀️' : '🌙';
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      });
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
