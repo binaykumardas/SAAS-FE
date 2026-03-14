@@ -36,13 +36,12 @@ export const BasicModal = ({
         onChange={v => setDraft(d => d ? { ...d, mobile: v } : d)}
       />
       <FormSelect
-        label="Marital Status" value={draft.maritalStatus}
-        onChange={v => setDraft(d => d ? { ...d, maritalStatus: v } : d)}
+        label="Dev Type" value={draft.devType}
+        onChange={v => setDraft(d => d ? { ...d, devType: v } : d)}
         options={[
-          { label: 'Never Married', value: 'NEVER_MARRIED' },
-          { label: 'Married',       value: 'MARRIED'       },
-          { label: 'Divorced',      value: 'DIVORCED'      },
-          { label: 'Widowed',       value: 'WIDOWED'       },
+          { label: 'Frontend Developer', value: 'FRONTEND_DEVELOPER' },
+          { label: 'Backend Developer',  value: 'BACKEND_DEVELOPER'  },
+          { label: 'Full Stack Developer',value: 'FULL_STACK_DEVELOPER'}
         ]}
       />
       <FormInput

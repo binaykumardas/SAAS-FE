@@ -4,7 +4,7 @@
     "lastName":      "Das",
     "mobile":        "9967564321",
     "gender":        "MALE",
-    "maritalStatus": "NEVER_MARRIED",
+    "devType":      "FRONTEND DEVELOPER",
     "dateOfBirth":   "2004-06-05",
     "aboutMe":       "Software engineer with a passion for technology and travel. Looking to build great products with great people.",
     "email":         "binay@email.com"

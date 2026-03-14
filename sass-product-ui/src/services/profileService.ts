@@ -38,7 +38,7 @@ export const fetchProfile = async (): Promise<ProfileData> => {
   // if (!res.ok) throw new Error('Failed to fetch profile');
   // return res.json();
   // ─────────────────────────────────────────
-  return profileData as ProfileData;
+  return profileData as unknown as ProfileData;
 };
 
 // ── PATCH basic details ───────────────────────────────────────

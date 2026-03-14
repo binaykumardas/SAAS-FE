@@ -4,7 +4,7 @@ export interface BasicDetails {
   lastName: string;
   mobile: string;
   gender: string;
-  maritalStatus: string;
+  devType: string;
   dateOfBirth: string;
   aboutMe: string;
   email: string;

@@ -22,7 +22,7 @@ export const BasicTab = ({
       <DetailField label="Last Name"      value={basic.lastName}                   />
       <DetailField label="Mobile"         value={basic.mobile}                     />
       <DetailField label="Gender"         value={formatLabel(basic.gender)}        />
-      <DetailField label="Marital Status" value={formatLabel(basic.maritalStatus)} />
+      <DetailField label="Dev Type"      value={formatLabel(basic.devType)}       />
       <DetailField label="Date of Birth"  value={formatDate(basic.dateOfBirth)}    />
     </div>
     <div className="mt-5 pt-5 border-t border-border">
