@@ -1,68 +1,113 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* src/index.css
+   ─────────────────────────────────────────────────────────────
+   Tailwind v4 — @theme replaces tailwind.config.js entirely.
+   Every token defined here becomes a utility class automatically.
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+   Examples after this setup:
+     bg-accent        → background-color: #2563EB
+     text-muted       → color: #A1A1AA
+     border-border    → border-color: #E4E4E7
+     rounded-xl       → border-radius: 16px (remapped below)
+     shadow-card      → box-shadow: 0 4px 24px ...
+   ─────────────────────────────────────────────────────────────
+*/
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import "tailwindcss";
+
+/* ── Dark mode via .dark class on <html> ─────────────────── */
+@variant dark (&:where(.dark, .dark *));
+
+/* ── Theme Tokens → become Tailwind utility classes ─────── */
+@theme {
+  /* Fonts */
+  --font-sans: "Geist", "Inter", system-ui, sans-serif;
+  --font-mono: "Geist Mono", monospace;
+
+  /* ── Colors ──────────────────────────────────────────── */
+
+  /* Accent — Electric Blue */
+  --color-accent:       #2563EB;  /* bg-accent, text-accent, border-accent    */
+  --color-accent-hover: #1D4ED8;  /* bg-accent-hover                          */
+  --color-accent-light: #60A5FA;  /* bg-accent-light                          */
+  --color-accent-tint:  #DBEAFE;  /* bg-accent-tint (badge bg, avatar bg)     */
+
+  /* Surfaces */
+  --color-bg:      #F7F7F8;  /* bg-bg      — page canvas                 */
+  --color-surface: #FFFFFF;  /* bg-surface — cards, modals               */
+  --color-raised:  #F4F4F5;  /* bg-raised  — inputs, tabs                */
+
+  /* Borders */
+  --color-border:       #E4E4E7;  /* border-border                            */
+  --color-border-strong:#D4D4D8;  /* border-border-strong                     */
+
+  /* Text */
+  --color-text:      #18181B;  /* text-text      — primary                 */
+  --color-secondary: #52525B;  /* text-secondary — subtitles               */
+  --color-muted:     #A1A1AA;  /* text-muted     — placeholders            */
+
+  /* Semantic */
+  --color-success:        #22C55E;
+  --color-warning:        #F59E0B;
+  --color-danger:         #DC2626;
+  --color-danger-bg:      #FEF2F2;
+  --color-danger-border:  #FECACA;
+
+  /* ── Shadows ─────────────────────────────────────────── */
+  --shadow-card:   0 4px 24px rgba(0, 0, 0, 0.06);  /* shadow-card   */
+  --shadow-accent: 0 4px 14px rgba(37, 99, 235, 0.3); /* shadow-accent */
+
+  /* ── Border Radius ───────────────────────────────────── */
+  /* These remap Tailwind's default rounded-* classes       */
+  --radius-sm:  4px;
+  --radius-md:  6px;
+  --radius-lg:  8px;
+  --radius-xl:  12px;
+  --radius-2xl: 16px;
+
+  /* ── Spacing extras (optional) ───────────────────────── */
+  /* Tailwind's default spacing scale (4, 8, 12...) still works */
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+/* ── Dark Mode Token Overrides ───────────────────────────── */
+/* When <html class="dark">, these replace the :root values   */
+.dark {
+  --color-accent:        #93C5FD;
+  --color-accent-hover:  #BFDBFE;
+  --color-accent-tint:   #1E3A5F;
+
+  --color-bg:      #0D0D0F;
+  --color-surface: #18181B;
+  --color-raised:  #1F1F23;
+
+  --color-border:        #2A2A2F;
+  --color-border-strong: #3A3A42;
+
+  --color-text:      #F0F0F4;
+  --color-secondary: #A1A1AA;
+  --color-muted:     #52525B;
+
+  --color-danger:        #FCA5A5;
+  --color-danger-bg:     #3F0D0D;
+  --color-danger-border: #7F1D1D;
+
+  --shadow-card:   0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-accent: 0 4px 14px rgba(147, 197, 253, 0.15);
 }
-a:hover {
-  color: #535bf2;
-}
+
+/* ── Base Styles ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  font-family:            var(--font-sans);
+  background-color:       var(--color-bg);
+  color:                  var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 250ms ease,color 250ms ease;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* ── Input focus ring (can't do this in Tailwind easily) ─── */
+.auth-input:focus {
+  outline:      none;
+  border-color: var(--color-accent);
+  box-shadow:   0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
