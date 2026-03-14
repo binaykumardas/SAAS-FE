@@ -1,32 +1,17 @@
-// src/pages/Profile.tsx
 import { useState } from 'react';
 import EditModal from '../../components/EditModal';
+import type { Achievement, BasicDetails, Collaboration, Education, Experience, Project, Skill } from '../../shared/model/profile';
 
-// ── Types ─────────────────────────────────────────────────────
-interface BasicDetails {
-  firstName:     string;
-  lastName:      string;
-  mobile:        string;
-  gender:        string;
-  maritalStatus: string;
-  dateOfBirth:   string;
-  aboutMe:       string;
-  email:         string;
-}
 
-interface PersonalDetails {
-  height:         string;
-  bodyType:       string;
-  weight:         string;
-  disability:     string;
-  complexion:     string;
-  qualification:  string;
-  bloodGroup:     string;
-  swastayani:     string;
-  dikshya:        string;
-  swastayaniDate: string;
-  dikshyaDate:    string;
-}
+// ── Tab type ──────────────────────────────────────────────────
+type TabKey =
+  | 'basic'
+  | 'skills'
+  | 'projects'
+  | 'collaborate'
+  | 'experience'
+  | 'education'
+  | 'achievements';
 
 // ── Reusable: Field wrapper ───────────────────────────────────
 const DetailField = ({ label, value }: { label: string; value: string }) => (
@@ -40,23 +25,15 @@ const DetailField = ({ label, value }: { label: string; value: string }) => (
 
 // ── Reusable: Form input ──────────────────────────────────────
 const FormInput = ({
-  label,
-  type = 'text',
-  value,
-  onChange,
-  placeholder,
+  label, type = 'text', value, onChange, placeholder,
 }: {
-  label:       string;
-  type?:       string;
-  value:       string;
-  onChange:    (v: string) => void;
-  placeholder?: string;
+  label: string; type?: string; value: string;
+  onChange: (v: string) => void; placeholder?: string;
 }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-sm font-medium text-text">{label}</label>
     <input
-      type={type}
-      value={value}
+      type={type} value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
@@ -68,21 +45,16 @@ const FormInput = ({
 
 // ── Reusable: Form select ─────────────────────────────────────
 const FormSelect = ({
-  label,
-  value,
-  onChange,
-  options,
+  label, value, onChange, options,
 }: {
-  label:   string;
-  value:   string;
-  onChange:(v: string) => void;
+  label: string; value: string;
+  onChange: (v: string) => void;
   options: { label: string; value: string }[];
 }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-sm font-medium text-text">{label}</label>
     <select
-      value={value}
-      onChange={e => onChange(e.target.value)}
+      value={value} onChange={e => onChange(e.target.value)}
       className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
         bg-raised border border-border text-text
         transition-all duration-150 cursor-pointer"
@@ -96,25 +68,17 @@ const FormSelect = ({
 
 // ── Reusable: Form textarea ───────────────────────────────────
 const FormTextarea = ({
-  label,
-  value,
-  onChange,
-  placeholder,
-  rows = 3,
+  label, value, onChange, placeholder, rows = 3,
 }: {
-  label:        string;
-  value:        string;
-  onChange:     (v: string) => void;
-  placeholder?: string;
-  rows?:        number;
+  label: string; value: string;
+  onChange: (v: string) => void;
+  placeholder?: string; rows?: number;
 }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-sm font-medium text-text">{label}</label>
     <textarea
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      rows={rows}
+      value={value} onChange={e => onChange(e.target.value)}
+      placeholder={placeholder} rows={rows}
       className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
         bg-raised border border-border text-text
         placeholder:text-muted transition-all duration-150 resize-none"
@@ -124,19 +88,13 @@ const FormTextarea = ({
 
 // ── Reusable: Section Card ────────────────────────────────────
 const SectionCard = ({
-  title,
-  onEdit,
-  children,
+  title, onEdit, children,
 }: {
-  title:    string;
-  onEdit:   () => void;
-  children: React.ReactNode;
+  title: string; onEdit: () => void; children: React.ReactNode;
 }) => (
   <div className="bg-surface border border-border rounded-2xl p-6 shadow-card">
     <div className="flex items-center justify-between mb-6">
-      <h2 className="text-sm font-bold tracking-tight text-text uppercase">
-        {title}
-      </h2>
+      <h2 className="text-sm font-bold tracking-tight text-text uppercase">{title}</h2>
       <button
         onClick={onEdit}
         className="flex items-center gap-1.5 text-xs font-semibold
@@ -157,12 +115,8 @@ const SectionCard = ({
 );
 
 // ── Reusable: Info Row ────────────────────────────────────────
-const InfoRow = ({
-  icon, label, value,
-}: {
-  icon:  React.ReactNode;
-  label: string;
-  value: string;
+const InfoRow = ({ icon, label, value }: {
+  icon: React.ReactNode; label: string; value: string;
 }) => (
   <div className="flex items-center gap-3">
     <div className="w-8 h-8 rounded-lg bg-accent-tint text-accent
@@ -176,14 +130,92 @@ const InfoRow = ({
   </div>
 );
 
+// ── Reusable: Skill chip ──────────────────────────────────────
+const SkillChip = ({ name, level }: { name: string; level: string }) => {
+  const levelColor: Record<string, string> = {
+    Expert:       'bg-accent-tint text-accent border-accent-tint',
+    Intermediate: 'bg-raised text-secondary border-border',
+    Beginner:     'bg-raised text-muted border-border',
+  };
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold
+      px-2.5 py-1 rounded-lg border ${levelColor[level] ?? levelColor.Beginner}`}>
+      {name}
+      <span className="text-[10px] font-normal opacity-70">{level[0]}</span>
+    </span>
+  );
+};
+
+// ── Reusable: Simple tag ──────────────────────────────────────
+const Tag = ({ label }: { label: string }) => (
+  <span className="text-xs font-medium px-2.5 py-1 rounded-lg
+    bg-raised border border-border text-secondary">
+    {label}
+  </span>
+);
+
+// ── Reusable: Status badge ────────────────────────────────────
+const StatusBadge = ({ status }: { status: string }) => {
+  const map: Record<string, string> = {
+    Live:          'bg-success/10 text-success border-success/20',
+    'In Progress': 'bg-warning/10 text-warning border-warning/20',
+    Archived:      'bg-raised text-muted border-border',
+  };
+  return (
+    <span className={`text-[10px] font-bold uppercase tracking-wider
+      px-2 py-0.5 rounded border ${map[status] ?? map.Archived}`}>
+      {status}
+    </span>
+  );
+};
+
+// ── Reusable: Empty state ─────────────────────────────────────
+const EmptyState = ({
+  icon, title, description, actionLabel, onAction,
+}: {
+  icon: string; title: string; description: string;
+  actionLabel: string; onAction: () => void;
+}) => (
+  <div className="bg-surface border border-border rounded-2xl p-12 shadow-card
+    flex flex-col items-center justify-center text-center gap-4">
+    <div className="w-12 h-12 rounded-xl bg-accent-tint flex items-center
+      justify-center text-2xl">
+      {icon}
+    </div>
+    <div>
+      <h3 className="text-sm font-bold text-text mb-1">{title}</h3>
+      <p className="text-sm text-secondary">{description}</p>
+    </div>
+    <button
+      onClick={onAction}
+      className="mt-1 px-5 py-2.5 rounded-lg text-sm font-semibold
+        bg-accent hover:bg-accent-hover text-white
+        shadow-accent transition-all duration-150">
+      {actionLabel}
+    </button>
+  </div>
+);
+
+// ── Reusable: Section header with add button ──────────────────
+const ListHeader = ({ title, onAdd }: { title: string; onAdd: () => void }) => (
+  <div className="flex items-center justify-between">
+    <h2 className="text-sm font-bold uppercase tracking-tight text-text">{title}</h2>
+    <button
+      onClick={onAdd}
+      className="text-xs font-semibold text-accent bg-accent-tint
+        hover:bg-accent hover:text-white px-3 py-1.5 rounded-lg
+        transition-all duration-150">
+      + Add
+    </button>
+  </div>
+);
+
 // ── Main Component ────────────────────────────────────────────
 const Profile = () => {
-  const [activeTab, setActiveTab] = useState<'basic' | 'personal' | 'family'>('basic');
+  const [activeTab, setActiveTab] = useState<TabKey>('basic');
+  const [editModal, setEditModal] = useState<TabKey | null>(null);
 
-  // Which modal is open: null | 'basic' | 'personal' | 'family'
-  const [editModal, setEditModal] = useState<'basic' | 'personal' | 'family' | null>(null);
-
-  // ── Basic state ──
+  // ── Basic state (unchanged) ───────────────────────────────
   const [basic, setBasic] = useState<BasicDetails>({
     firstName:     'Binay',
     lastName:      'Das',
@@ -196,42 +228,104 @@ const Profile = () => {
   });
   const [basicDraft, setBasicDraft] = useState<BasicDetails>(basic);
 
-  // ── Personal state ──
-  const [personal, setPersonal] = useState<PersonalDetails>({
-    height:         '5ft 10inch',
-    bodyType:       'Athletic',
-    weight:         '70 Kg',
-    disability:     'No',
-    complexion:     'Fair',
-    qualification:  "Bachelor's Degree",
-    bloodGroup:     'O+',
-    swastayani:     'Yes',
-    dikshya:        'Yes',
-    swastayaniDate: '2016-07-20',
-    dikshyaDate:    '2011-02-14',
-  });
-  const [personalDraft, setPersonalDraft] = useState<PersonalDetails>(personal);
+  // ── Skills state ──────────────────────────────────────────
+  const [skills] = useState<Skill[]>([
+    { id: '1', name: 'TypeScript', level: 'Expert',       category: 'Language' },
+    { id: '2', name: 'React',      level: 'Expert',       category: 'Frontend' },
+    { id: '3', name: 'Node.js',    level: 'Intermediate', category: 'Backend'  },
+    { id: '4', name: 'PostgreSQL', level: 'Intermediate', category: 'Database' },
+    { id: '5', name: 'Docker',     level: 'Beginner',     category: 'DevOps'   },
+    { id: '6', name: 'Python',     level: 'Intermediate', category: 'Language' },
+  ]);
 
-  // ── Open modal handlers ──
-  const openModal = (tab: 'basic' | 'personal' | 'family') => {
-    if (tab === 'basic')    setBasicDraft({ ...basic });
-    if (tab === 'personal') setPersonalDraft({ ...personal });
+  // ── Projects state ────────────────────────────────────────
+  const [projects] = useState<Project[]>([
+    {
+      id:          '1',
+      name:        'DevConnect',
+      description: 'A platform for developers to find collaborators and build projects together.',
+      techStack:   ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
+      role:        'Lead',
+      status:      'In Progress',
+      githubUrl:   'github.com/binaydas/devconnect',
+      liveUrl:     '',
+      lookingFor:  ['Backend Dev', 'Designer'],
+    },
+  ]);
+
+  // ── Experience state ──────────────────────────────────────
+  const [experiences] = useState<Experience[]>([
+    {
+      id:          '1',
+      company:     'TechCorp',
+      role:        'Frontend Developer',
+      type:        'Full-time',
+      startDate:   'Jan 2023',
+      endDate:     '',
+      description: 'Built scalable React applications and led the migration to TypeScript.',
+    },
+  ]);
+
+  // ── Education state ───────────────────────────────────────
+  const [educations] = useState<Education[]>([
+    {
+      id:          '1',
+      institution: 'KIIT University',
+      degree:      'B.Tech Computer Science',
+      startYear:   '2020',
+      endYear:     '2024',
+      type:        'Degree',
+      link:        '',
+    },
+  ]);
+
+  // ── Collaboration state ───────────────────────────────────
+  const [collaboration, setCollaboration] = useState<Collaboration>({
+    projectTypes: ['SaaS', 'Open Source'],
+    lookingFor:   ['Co-founder', 'Designer', 'Backend Dev'],
+    availability: 'Part-time',
+    workStyle:    'Remote',
+    timezone:     'IST (UTC+5:30)',
+    pitch:        'I want to build developer tools that make collaboration easier. Looking for a designer or backend developer to partner with.',
+  });
+  const [collaborationDraft, setCollaborationDraft] = useState<Collaboration>(collaboration);
+
+  // ── Achievements state ────────────────────────────────────
+  const [achievements] = useState<Achievement[]>([
+    {
+      id:          '1',
+      title:       'HackIndia 2023 — 2nd Place',
+      type:        'Hackathon',
+      description: 'Built an AI-powered code review tool in 24 hours.',
+      date:        '2023-08-15',
+      link:        '',
+    },
+  ]);
+
+  // ── Modal handlers ────────────────────────────────────────
+  const openModal = (tab: TabKey) => {
+    if (tab === 'basic')       setBasicDraft({ ...basic });
+    if (tab === 'collaborate') setCollaborationDraft({ ...collaboration });
     setEditModal(tab);
   };
 
   const closeModal = () => setEditModal(null);
 
-  // ── Save handlers ──
-  const saveBasic    = () => { setBasic(basicDraft);       closeModal(); };
-  const savePersonal = () => { setPersonal(personalDraft); closeModal(); };
+  const saveBasic       = () => { setBasic(basicDraft);             closeModal(); };
+  const saveCollaborate = () => { setCollaboration(collaborationDraft); closeModal(); };
 
-  const tabs = [
-    { key: 'basic',    label: 'Basic Details'    },
-    { key: 'personal', label: 'Personal Details' },
-    { key: 'family',   label: 'Family Details'   },
-  ] as const;
+  // ── Tabs ──────────────────────────────────────────────────
+  const tabs: { key: TabKey; label: string }[] = [
+    { key: 'basic',        label: 'Basic'        },
+    { key: 'skills',       label: 'Skills'       },
+    { key: 'projects',     label: 'Projects'     },
+    { key: 'collaborate',  label: 'Collaborate'  },
+    { key: 'experience',   label: 'Experience'   },
+    { key: 'education',    label: 'Education'    },
+    { key: 'achievements', label: 'Achievements' },
+  ];
 
-  // ── Helpers ──
+  // ── Helpers ───────────────────────────────────────────────
   const formatDate = (d: string) => {
     if (!d) return '—';
     const date = new Date(d);
@@ -240,6 +334,12 @@ const Profile = () => {
 
   const formatLabel = (val: string) =>
     val.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  const skillsByCategory = skills.reduce<Record<string, Skill[]>>((acc, s) => {
+    if (!acc[s.category]) acc[s.category] = [];
+    acc[s.category].push(s);
+    return acc;
+  }, {});
 
   return (
     <div className="min-h-screen bg-bg transition-colors duration-250">
@@ -264,7 +364,7 @@ const Profile = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* ── Left Column ── */}
+          {/* ── Left Column (unchanged) ── */}
           <div className="lg:col-span-1 flex flex-col gap-4">
             <div className="bg-surface border border-border rounded-2xl p-6 shadow-card">
 
@@ -311,40 +411,16 @@ const Profile = () => {
               {/* Quick info */}
               <div className="flex flex-col gap-3">
                 <InfoRow
-                  label="Date of Birth"
-                  value={formatDate(basic.dateOfBirth)}
-                  icon={
-                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                      stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round"
-                        d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
-                      />
-                    </svg>
-                  }
+                  label="Date of Birth" value={formatDate(basic.dateOfBirth)}
+                  icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>}
                 />
                 <InfoRow
-                  label="Email Address"
-                  value={basic.email}
-                  icon={
-                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                      stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round"
-                        d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
-                      />
-                    </svg>
-                  }
+                  label="Email Address" value={basic.email}
+                  icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>}
                 />
                 <InfoRow
-                  label="Mobile"
-                  value={basic.mobile}
-                  icon={
-                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                      stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round"
-                        d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"
-                      />
-                    </svg>
-                  }
+                  label="Mobile" value={basic.mobile}
+                  icon={<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>}
                 />
               </div>
 
@@ -361,40 +437,40 @@ const Profile = () => {
             {/* Completion card */}
             <div className="bg-surface border border-border rounded-2xl p-5 shadow-card">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-bold uppercase tracking-wider text-text">
-                  Completion
-                </p>
+                <p className="text-xs font-bold uppercase tracking-wider text-text">Completion</p>
                 <span className="text-xs font-bold text-accent">78%</span>
               </div>
               <div className="w-full h-1.5 bg-raised rounded-full overflow-hidden mb-3">
                 <div className="h-full bg-accent rounded-full" style={{ width: '78%' }} />
               </div>
-              <p className="text-xs text-muted">Add family details to reach 100%</p>
+              <p className="text-xs text-muted">Add more details to reach 100%</p>
             </div>
           </div>
 
           {/* ── Right Column ── */}
           <div className="lg:col-span-2 flex flex-col gap-5">
 
-            {/* Tabs */}
-            <div className="flex gap-1 bg-raised border border-border rounded-xl p-1 w-fit">
-              {tabs.map(tab => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`px-4 py-2 rounded-lg text-xs font-semibold
-                    transition-all duration-150
-                    ${activeTab === tab.key
-                      ? 'bg-surface text-accent border border-border shadow-card'
-                      : 'text-secondary hover:text-text'
-                    }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            {/* Tabs — scrollable on mobile */}
+            <div className="overflow-x-auto pb-1">
+              <div className="flex gap-1 bg-raised border border-border rounded-xl p-1 w-fit">
+                {tabs.map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap
+                      transition-all duration-150
+                      ${activeTab === tab.key
+                        ? 'bg-surface text-accent border border-border shadow-card'
+                        : 'text-secondary hover:text-text'
+                      }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Basic Details Tab */}
+            {/* ── Basic Details Tab (unchanged) ── */}
             {activeTab === 'basic' && (
               <SectionCard title="Basic Details" onEdit={() => openModal('basic')}>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-5">
@@ -411,53 +487,221 @@ const Profile = () => {
               </SectionCard>
             )}
 
-            {/* Personal Details Tab */}
-            {activeTab === 'personal' && (
-              <SectionCard title="Personal Details" onEdit={() => openModal('personal')}>
-                <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-                  <DetailField label="Height"          value={personal.height}                        />
-                  <DetailField label="Body Type"       value={personal.bodyType}                      />
-                  <DetailField label="Weight"          value={personal.weight}                        />
-                  <DetailField label="Disability"      value={personal.disability}                    />
-                  <DetailField label="Complexion"      value={personal.complexion}                    />
-                  <DetailField label="Qualification"   value={personal.qualification}                 />
-                  <DetailField label="Blood Group"     value={personal.bloodGroup}                    />
-                  <DetailField label="Swastayani"      value={personal.swastayani}                    />
-                  <DetailField label="Dikshya"         value={personal.dikshya}                       />
-                  <DetailField label="Swastayani Date" value={formatDate(personal.swastayaniDate)}    />
-                  <DetailField label="Dikshya Date"    value={formatDate(personal.dikshyaDate)}       />
+            {/* ── Skills Tab ── */}
+            {activeTab === 'skills' && (
+              <SectionCard title="Skills & Technologies" onEdit={() => openModal('skills')}>
+                <div className="flex flex-col gap-5">
+                  {Object.entries(skillsByCategory).map(([category, catSkills]) => (
+                    <div key={category}>
+                      <p className="text-xs font-bold uppercase tracking-wider text-muted mb-2">
+                        {category}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {catSkills.map(s => (
+                          <SkillChip key={s.id} name={s.name} level={s.level} />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 pt-4 border-t border-border flex items-center gap-4">
+                  <span className="text-xs text-muted">Legend:</span>
+                  <span className="text-xs text-secondary">
+                    <span className="font-bold text-accent">E</span> = Expert
+                  </span>
+                  <span className="text-xs text-secondary">
+                    <span className="font-bold">I</span> = Intermediate
+                  </span>
+                  <span className="text-xs text-secondary">
+                    <span className="font-bold">B</span> = Beginner
+                  </span>
                 </div>
               </SectionCard>
             )}
 
-            {/* Family Details Tab */}
-            {activeTab === 'family' && (
-              <div className="bg-surface border border-border rounded-2xl
-                p-12 shadow-card flex flex-col items-center justify-center
-                text-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-accent-tint
-                  flex items-center justify-center">
-                  <svg width="22" height="22" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" strokeWidth={1.8} className="text-accent">
-                    <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
-                    />
-                  </svg>
+            {/* ── Projects Tab ── */}
+            {activeTab === 'projects' && (
+              projects.length === 0
+                ? <EmptyState
+                    icon="🚀"
+                    title="No projects yet"
+                    description="Add projects you've built to showcase your work"
+                    actionLabel="+ Add Project"
+                    onAction={() => openModal('projects')}
+                  />
+                : <div className="flex flex-col gap-4">
+                    <ListHeader title="Projects" onAdd={() => openModal('projects')} />
+                    {projects.map(p => (
+                      <div key={p.id}
+                        className="bg-surface border border-border rounded-2xl p-5 shadow-card">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div>
+                            <h3 className="text-sm font-bold text-text">{p.name}</h3>
+                            <p className="text-xs text-secondary mt-0.5">{p.description}</p>
+                          </div>
+                          <StatusBadge status={p.status} />
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {p.techStack.map(t => <Tag key={t} label={t} />)}
+                        </div>
+                        <div className="flex items-center gap-4 pt-3 border-t border-border">
+                          <span className="text-xs text-muted">
+                            Role: <span className="text-text font-semibold">{p.role}</span>
+                          </span>
+                          {p.lookingFor.length > 0 && (
+                            <span className="text-xs text-muted">
+                              Looking for:{' '}
+                              <span className="text-accent font-semibold">
+                                {p.lookingFor.join(', ')}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+            )}
+
+            {/* ── Collaborate Tab ── */}
+            {activeTab === 'collaborate' && (
+              <SectionCard title="Looking to Collaborate" onEdit={() => openModal('collaborate')}>
+                <div className="flex flex-col gap-5">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted mb-2">
+                      My Pitch
+                    </p>
+                    <p className="text-sm text-secondary leading-relaxed">
+                      {collaboration.pitch}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
+                        Project Types
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {collaboration.projectTypes.map(t => <Tag key={t} label={t} />)}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
+                        Looking For
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {collaboration.lookingFor.map(t => (
+                          <span key={t} className="text-xs font-semibold px-2.5 py-1
+                            rounded-lg bg-accent-tint text-accent border border-accent-tint">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <DetailField label="Availability" value={collaboration.availability} />
+                    <DetailField label="Work Style"   value={collaboration.workStyle}    />
+                    <DetailField label="Time Zone"    value={collaboration.timezone}     />
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-text mb-1">No family details yet</h3>
-                  <p className="text-sm text-secondary">
-                    Add your family information to complete your profile
-                  </p>
-                </div>
-                <button
-                  onClick={() => openModal('family')}
-                  className="mt-1 px-5 py-2.5 rounded-lg text-sm font-semibold
-                    bg-accent hover:bg-accent-hover text-white
-                    shadow-accent transition-all duration-150">
-                  + Add Family Details
-                </button>
-              </div>
+              </SectionCard>
+            )}
+
+            {/* ── Experience Tab ── */}
+            {activeTab === 'experience' && (
+              experiences.length === 0
+                ? <EmptyState
+                    icon="💼"
+                    title="No experience added"
+                    description="Add your work history, internships or freelance projects"
+                    actionLabel="+ Add Experience"
+                    onAction={() => openModal('experience')}
+                  />
+                : <div className="flex flex-col gap-4">
+                    <ListHeader title="Experience" onAdd={() => openModal('experience')} />
+                    {experiences.map(exp => (
+                      <div key={exp.id}
+                        className="bg-surface border border-border rounded-2xl p-5 shadow-card">
+                        <div className="flex items-start justify-between mb-1">
+                          <div>
+                            <h3 className="text-sm font-bold text-text">{exp.role}</h3>
+                            <p className="text-xs text-accent font-semibold mt-0.5">{exp.company}</p>
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider
+                            px-2 py-0.5 rounded border bg-raised border-border text-muted">
+                            {exp.type}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted mb-2">
+                          {exp.startDate} — {exp.endDate || 'Present'}
+                        </p>
+                        <p className="text-sm text-secondary leading-relaxed">
+                          {exp.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+            )}
+
+            {/* ── Education Tab ── */}
+            {activeTab === 'education' && (
+              educations.length === 0
+                ? <EmptyState
+                    icon="🎓"
+                    title="No education added"
+                    description="Add your degrees, bootcamps or certifications"
+                    actionLabel="+ Add Education"
+                    onAction={() => openModal('education')}
+                  />
+                : <div className="flex flex-col gap-4">
+                    <ListHeader title="Education" onAdd={() => openModal('education')} />
+                    {educations.map(edu => (
+                      <div key={edu.id}
+                        className="bg-surface border border-border rounded-2xl p-5 shadow-card">
+                        <div className="flex items-start justify-between mb-1">
+                          <div>
+                            <h3 className="text-sm font-bold text-text">{edu.degree}</h3>
+                            <p className="text-xs text-accent font-semibold mt-0.5">
+                              {edu.institution}
+                            </p>
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider
+                            px-2 py-0.5 rounded border bg-raised border-border text-muted">
+                            {edu.type}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted">
+                          {edu.startYear} — {edu.endYear}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+            )}
+
+            {/* ── Achievements Tab ── */}
+            {activeTab === 'achievements' && (
+              achievements.length === 0
+                ? <EmptyState
+                    icon="🏆"
+                    title="No achievements yet"
+                    description="Add hackathons, open source contributions, articles or awards"
+                    actionLabel="+ Add Achievement"
+                    onAction={() => openModal('achievements')}
+                  />
+                : <div className="flex flex-col gap-4">
+                    <ListHeader title="Achievements" onAdd={() => openModal('achievements')} />
+                    {achievements.map(a => (
+                      <div key={a.id}
+                        className="bg-surface border border-border rounded-2xl p-5 shadow-card">
+                        <div className="flex items-start justify-between mb-1">
+                          <h3 className="text-sm font-bold text-text">{a.title}</h3>
+                          <span className="text-[10px] font-bold uppercase tracking-wider
+                            px-2 py-0.5 rounded border bg-accent-tint border-accent-tint text-accent">
+                            {a.type}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted mb-2">{formatDate(a.date)}</p>
+                        <p className="text-sm text-secondary leading-relaxed">{a.description}</p>
+                      </div>
+                    ))}
+                  </div>
             )}
 
           </div>
@@ -465,10 +709,10 @@ const Profile = () => {
       </div>
 
       {/* ════════════════════════════════════════════
-          MODALS — one per tab, all using EditModal
+          MODALS
       ════════════════════════════════════════════ */}
 
-      {/* Basic Details Modal */}
+      {/* Basic Details Modal (unchanged) */}
       <EditModal
         title="Edit your basic details information."
         isOpen={editModal === 'basic'}
@@ -476,45 +720,24 @@ const Profile = () => {
         onSave={saveBasic}
       >
         <div className="grid grid-cols-2 gap-4">
-          <FormInput
-            label="First Name"
-            value={basicDraft.firstName}
-            onChange={v => setBasicDraft(d => ({ ...d, firstName: v }))}
-            placeholder="First name"
-          />
-          <FormInput
-            label="Last Name"
-            value={basicDraft.lastName}
-            onChange={v => setBasicDraft(d => ({ ...d, lastName: v }))}
-            placeholder="Last name"
-          />
-          <FormInput
-            label="Phone Number"
-            type="tel"
-            value={basicDraft.mobile}
-            onChange={v => setBasicDraft(d => ({ ...d, mobile: v }))}
-            placeholder="Phone number"
-          />
-          <FormSelect
-            label="Marital Status"
-            value={basicDraft.maritalStatus}
+          <FormInput label="First Name" value={basicDraft.firstName}
+            onChange={v => setBasicDraft(d => ({ ...d, firstName: v }))} placeholder="First name" />
+          <FormInput label="Last Name" value={basicDraft.lastName}
+            onChange={v => setBasicDraft(d => ({ ...d, lastName: v }))} placeholder="Last name" />
+          <FormInput label="Phone Number" type="tel" value={basicDraft.mobile}
+            onChange={v => setBasicDraft(d => ({ ...d, mobile: v }))} placeholder="Phone number" />
+          <FormSelect label="Marital Status" value={basicDraft.maritalStatus}
             onChange={v => setBasicDraft(d => ({ ...d, maritalStatus: v }))}
             options={[
-              { label: 'Never Married',  value: 'NEVER_MARRIED'  },
-              { label: 'Married',        value: 'MARRIED'        },
-              { label: 'Divorced',       value: 'DIVORCED'       },
-              { label: 'Widowed',        value: 'WIDOWED'        },
+              { label: 'Never Married', value: 'NEVER_MARRIED' },
+              { label: 'Married',       value: 'MARRIED'       },
+              { label: 'Divorced',      value: 'DIVORCED'      },
+              { label: 'Widowed',       value: 'WIDOWED'       },
             ]}
           />
-          <FormInput
-            label="Date of Birth"
-            type="date"
-            value={basicDraft.dateOfBirth}
-            onChange={v => setBasicDraft(d => ({ ...d, dateOfBirth: v }))}
-          />
-          <FormSelect
-            label="Gender"
-            value={basicDraft.gender}
+          <FormInput label="Date of Birth" type="date" value={basicDraft.dateOfBirth}
+            onChange={v => setBasicDraft(d => ({ ...d, dateOfBirth: v }))} />
+          <FormSelect label="Gender" value={basicDraft.gender}
             onChange={v => setBasicDraft(d => ({ ...d, gender: v }))}
             options={[
               { label: 'Male',   value: 'MALE'   },
@@ -523,149 +746,83 @@ const Profile = () => {
             ]}
           />
           <div className="col-span-2">
-            <FormInput
-              label="Email Address"
-              type="email"
-              value={basicDraft.email}
-              onChange={v => setBasicDraft(d => ({ ...d, email: v }))}
-              placeholder="email@example.com"
-            />
+            <FormInput label="Email Address" type="email" value={basicDraft.email}
+              onChange={v => setBasicDraft(d => ({ ...d, email: v }))} placeholder="email@example.com" />
           </div>
           <div className="col-span-2">
-            <FormTextarea
-              label="About Me"
-              value={basicDraft.aboutMe}
+            <FormTextarea label="About Me" value={basicDraft.aboutMe}
               onChange={v => setBasicDraft(d => ({ ...d, aboutMe: v }))}
-              placeholder="Tell us about yourself..."
-              rows={3}
-            />
+              placeholder="Tell us about yourself..." rows={3} />
           </div>
         </div>
       </EditModal>
 
-      {/* Personal Details Modal */}
+      {/* Collaborate Modal */}
       <EditModal
-        title="Edit your personal details information."
-        isOpen={editModal === 'personal'}
+        title="Edit your collaboration preferences."
+        isOpen={editModal === 'collaborate'}
         onClose={closeModal}
-        onSave={savePersonal}
+        onSave={saveCollaborate}
       >
         <div className="grid grid-cols-2 gap-4">
-          <FormInput
-            label="Height"
-            value={personalDraft.height}
-            onChange={v => setPersonalDraft(d => ({ ...d, height: v }))}
-            placeholder="e.g. 5ft 10inch"
-          />
-          <FormSelect
-            label="Body Type"
-            value={personalDraft.bodyType}
-            onChange={v => setPersonalDraft(d => ({ ...d, bodyType: v }))}
-            options={[
-              { label: 'Athletic', value: 'Athletic' },
-              { label: 'Slim',     value: 'Slim'     },
-              { label: 'Average',  value: 'Average'  },
-              { label: 'Heavy',    value: 'Heavy'    },
-            ]}
-          />
-          <FormInput
-            label="Weight"
-            value={personalDraft.weight}
-            onChange={v => setPersonalDraft(d => ({ ...d, weight: v }))}
-            placeholder="e.g. 70 Kg"
-          />
-          <FormSelect
-            label="Disability"
-            value={personalDraft.disability}
-            onChange={v => setPersonalDraft(d => ({ ...d, disability: v }))}
-            options={[
-              { label: 'No',  value: 'No'  },
-              { label: 'Yes', value: 'Yes' },
-            ]}
-          />
-          <FormSelect
-            label="Complexion"
-            value={personalDraft.complexion}
-            onChange={v => setPersonalDraft(d => ({ ...d, complexion: v }))}
-            options={[
-              { label: 'Fair',      value: 'Fair'      },
-              { label: 'Wheatish',  value: 'Wheatish'  },
-              { label: 'Dark',      value: 'Dark'      },
-            ]}
-          />
-          <FormInput
-            label="Qualification"
-            value={personalDraft.qualification}
-            onChange={v => setPersonalDraft(d => ({ ...d, qualification: v }))}
-            placeholder="e.g. Bachelor's Degree"
-          />
-          <FormSelect
-            label="Blood Group"
-            value={personalDraft.bloodGroup}
-            onChange={v => setPersonalDraft(d => ({ ...d, bloodGroup: v }))}
-            options={[
-              { label: 'A+',  value: 'A+'  },
-              { label: 'A-',  value: 'A-'  },
-              { label: 'B+',  value: 'B+'  },
-              { label: 'B-',  value: 'B-'  },
-              { label: 'O+',  value: 'O+'  },
-              { label: 'O-',  value: 'O-'  },
-              { label: 'AB+', value: 'AB+' },
-              { label: 'AB-', value: 'AB-' },
-            ]}
-          />
-          <FormSelect
-            label="Swastayani"
-            value={personalDraft.swastayani}
-            onChange={v => setPersonalDraft(d => ({ ...d, swastayani: v }))}
-            options={[
-              { label: 'Yes', value: 'Yes' },
-              { label: 'No',  value: 'No'  },
-            ]}
-          />
-          <FormInput
-            label="Swastayani Date"
-            type="date"
-            value={personalDraft.swastayaniDate}
-            onChange={v => setPersonalDraft(d => ({ ...d, swastayaniDate: v }))}
-          />
-          <FormSelect
-            label="Dikshya"
-            value={personalDraft.dikshya}
-            onChange={v => setPersonalDraft(d => ({ ...d, dikshya: v }))}
-            options={[
-              { label: 'Yes', value: 'Yes' },
-              { label: 'No',  value: 'No'  },
-            ]}
-          />
-          <FormInput
-            label="Dikshya Date"
-            type="date"
-            value={personalDraft.dikshyaDate}
-            onChange={v => setPersonalDraft(d => ({ ...d, dikshyaDate: v }))}
-          />
-        </div>
-      </EditModal>
-
-      {/* Family Details Modal */}
-      <EditModal
-        title="Add your family details information."
-        isOpen={editModal === 'family'}
-        onClose={closeModal}
-        onSave={closeModal}
-      >
-        <div className="grid grid-cols-2 gap-4">
-          <FormInput label="Father's Name"       value="" onChange={() => {}} placeholder="Father's full name"   />
-          <FormInput label="Mother's Name"       value="" onChange={() => {}} placeholder="Mother's full name"   />
-          <FormInput label="Father's Occupation" value="" onChange={() => {}} placeholder="e.g. Business"        />
-          <FormInput label="Mother's Occupation" value="" onChange={() => {}} placeholder="e.g. Homemaker"       />
-          <FormInput label="No. of Brothers"     value="" onChange={() => {}} placeholder="e.g. 1"               />
-          <FormInput label="No. of Sisters"      value="" onChange={() => {}} placeholder="e.g. 2"               />
           <div className="col-span-2">
-            <FormInput label="Family Location"   value="" onChange={() => {}} placeholder="City, State"          />
+            <FormTextarea label="My Pitch" value={collaborationDraft.pitch}
+              onChange={v => setCollaborationDraft(d => ({ ...d, pitch: v }))}
+              placeholder="What do you want to build? Who are you looking for?" rows={3} />
           </div>
+          <FormInput
+            label="Project Types (comma separated)"
+            value={collaborationDraft.projectTypes.join(', ')}
+            onChange={v => setCollaborationDraft(d => ({
+              ...d, projectTypes: v.split(',').map(s => s.trim()).filter(Boolean),
+            }))}
+            placeholder="SaaS, Open Source, Mobile"
+          />
+          <FormInput
+            label="Looking For (comma separated)"
+            value={collaborationDraft.lookingFor.join(', ')}
+            onChange={v => setCollaborationDraft(d => ({
+              ...d, lookingFor: v.split(',').map(s => s.trim()).filter(Boolean),
+            }))}
+            placeholder="Co-founder, Designer, Backend Dev"
+          />
+          <FormSelect label="Availability" value={collaborationDraft.availability}
+            onChange={v => setCollaborationDraft(d => ({ ...d, availability: v }))}
+            options={[
+              { label: 'Full-time', value: 'Full-time' },
+              { label: 'Part-time', value: 'Part-time' },
+              { label: 'Weekends',  value: 'Weekends'  },
+              { label: 'Flexible',  value: 'Flexible'  },
+            ]}
+          />
+          <FormSelect label="Work Style" value={collaborationDraft.workStyle}
+            onChange={v => setCollaborationDraft(d => ({ ...d, workStyle: v }))}
+            options={[
+              { label: 'Remote',    value: 'Remote'    },
+              { label: 'Hybrid',    value: 'Hybrid'    },
+              { label: 'In-person', value: 'In-person' },
+            ]}
+          />
+          <FormInput label="Time Zone" value={collaborationDraft.timezone}
+            onChange={v => setCollaborationDraft(d => ({ ...d, timezone: v }))}
+            placeholder="e.g. IST (UTC+5:30)" />
         </div>
       </EditModal>
+
+      {/* Skills / Projects / Experience / Education / Achievements — coming soon */}
+      {(['skills', 'projects', 'experience', 'education', 'achievements'] as const).map(key => (
+        <EditModal
+          key={key}
+          title={`Add ${key.charAt(0).toUpperCase() + key.slice(1)}`}
+          isOpen={editModal === key}
+          onClose={closeModal}
+          onSave={closeModal}
+        >
+          <p className="text-sm text-secondary py-6 text-center">
+            Full {key} form — connect your API and build the form here.
+          </p>
+        </EditModal>
+      ))}
 
     </div>
   );
