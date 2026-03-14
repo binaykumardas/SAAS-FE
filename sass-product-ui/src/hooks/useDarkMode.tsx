@@ -1,20 +1,17 @@
-// ============================================================
-//  useDarkMode — TypeScript Hook
-//  Place at: src/hooks/useDarkMode.ts
-// ============================================================
-
+// src/hooks/useDarkMode.ts
 import { useState, useEffect } from 'react';
 
 type Theme = 'light' | 'dark';
 
 interface UseDarkModeReturn {
-  isDark:     boolean;
-  theme:      Theme;
+  isDark:      boolean;
+  theme:       Theme;
   toggleTheme: () => void;
-  setTheme:   (theme: Theme) => void;
+  setTheme:    (theme: Theme) => void;
 }
 
-export function useDarkMode(): UseDarkModeReturn {
+export const useDarkMode = (): UseDarkModeReturn => {
+
   const [isDark, setIsDark] = useState<boolean>(() => {
     // 1. Check saved user preference in localStorage
     const saved = localStorage.getItem('theme') as Theme | null;
@@ -24,22 +21,20 @@ export function useDarkMode(): UseDarkModeReturn {
   });
 
   useEffect(() => {
-    const root = document.documentElement;
+    const root = document.documentElement; // <html>
     if (isDark) {
-      root.setAttribute('data-theme', 'dark');  // for CSS var switching
-      root.classList.add('dark');               // for Tailwind dark mode
+      root.classList.add('dark');    // Tailwind dark: prefix activates
     } else {
-      root.removeAttribute('data-theme');
       root.classList.remove('dark');
     }
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
-  // Also respond to OS preference changes (e.g. user changes system theme)
+  // Respond to OS preference changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e: MediaQueryListEvent) => {
-      // Only update if user hasn't set a manual preference
+      // Only auto-switch if user hasn't set a manual preference
       const saved = localStorage.getItem('theme');
       if (!saved) setIsDark(e.matches);
     };
@@ -49,8 +44,8 @@ export function useDarkMode(): UseDarkModeReturn {
 
   return {
     isDark,
-    theme:        isDark ? 'dark' : 'light',
-    toggleTheme:  () => setIsDark(prev => !prev),
-    setTheme:     (t: Theme) => setIsDark(t === 'dark'),
+    theme:       isDark ? 'dark' : 'light',
+    toggleTheme: () => setIsDark(prev => !prev),
+    setTheme:    (t: Theme) => setIsDark(t === 'dark'),
   };
-}
+};

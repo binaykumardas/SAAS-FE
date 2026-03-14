@@ -1,6 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+const inputClass = `
+  auth-input
+  w-full px-3.5 py-2.5 rounded-lg text-sm
+  bg-raised border border-border
+  text-text placeholder:text-muted
+  transition-all duration-150
+`;
+
 const Signup = () => {
   const navigate = useNavigate();
 
@@ -32,35 +40,36 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-bg dark:bg-bg flex items-center justify-center px-4 py-12 transition-colors duration-250">
       <div className="w-full max-w-md">
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-text">
+          <h1 className="text-3xl font-bold tracking-tight text-text dark:text-text">
             Create your account
           </h1>
-          <p className="mt-2 text-sm text-secondary">
+          <p className="mt-2 text-sm text-secondary dark:text-secondary">
             Join thousands of builders today
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-surface border border-border rounded-2xl p-8 shadow-card">
+        <div className="bg-surface dark:bg-surface border border-border dark:border-border rounded-2xl p-8 shadow-card dark:shadow-card">
 
           {/* Error */}
           {error && (
             <div className="mb-5 px-4 py-3 rounded-lg text-sm
-              bg-danger-bg border border-danger-border text-danger">
+              bg-danger-bg dark:bg-danger-bg
+              border border-danger-border dark:border-danger-border
+              text-danger dark:text-danger">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
 
-            {/* Full Name */}
             <div className="mb-5">
-              <label className="block text-sm font-medium text-text mb-1.5">
+              <label className="block text-sm font-medium text-text dark:text-text mb-1.5">
                 Full name
               </label>
               <input
@@ -70,15 +79,12 @@ const Signup = () => {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="John Doe"
-                className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
-                  bg-raised border border-border text-text
-                  placeholder:text-muted transition-all duration-150"
+                className={inputClass}
               />
             </div>
 
-            {/* Email */}
             <div className="mb-5">
-              <label className="block text-sm font-medium text-text mb-1.5">
+              <label className="block text-sm font-medium text-text dark:text-text mb-1.5">
                 Email address
               </label>
               <input
@@ -88,15 +94,12 @@ const Signup = () => {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
-                  bg-raised border border-border text-text
-                  placeholder:text-muted transition-all duration-150"
+                className={inputClass}
               />
             </div>
 
-            {/* Password */}
             <div className="mb-5">
-              <label className="block text-sm font-medium text-text mb-1.5">
+              <label className="block text-sm font-medium text-text dark:text-text mb-1.5">
                 Password
               </label>
               <input
@@ -106,15 +109,12 @@ const Signup = () => {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Min. 8 characters"
-                className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
-                  bg-raised border border-border text-text
-                  placeholder:text-muted transition-all duration-150"
+                className={inputClass}
               />
             </div>
 
-            {/* Confirm Password */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-text mb-1.5">
+              <label className="block text-sm font-medium text-text dark:text-text mb-1.5">
                 Confirm password
               </label>
               <input
@@ -124,19 +124,19 @@ const Signup = () => {
                 value={confirm}
                 onChange={e => setConfirm(e.target.value)}
                 placeholder="••••••••"
-                className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
-                  bg-raised border border-border text-text
-                  placeholder:text-muted transition-all duration-150"
+                className={inputClass}
               />
             </div>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
               className="w-full py-2.5 px-4 rounded-lg text-sm font-semibold
-                bg-accent hover:bg-accent-hover text-white
-                shadow-accent transition-all duration-150
+                bg-accent hover:bg-accent-hover
+                dark:bg-accent dark:hover:bg-accent-hover
+                text-white dark:text-bg
+                shadow-accent dark:shadow-accent
+                transition-all duration-150
                 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Create account'}
@@ -144,9 +144,12 @@ const Signup = () => {
 
           </form>
 
-          <p className="text-center text-sm text-secondary mt-6">
+          <p className="text-center text-sm text-secondary dark:text-secondary mt-6">
             Already have an account?{' '}
-            <Link to="/login" className="font-semibold text-accent hover:underline">
+            <Link
+              to="/login"
+              className="font-semibold text-accent dark:text-accent hover:underline"
+            >
               Sign in
             </Link>
           </p>

@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import ForgotPassword from './pages/auth/ForgotPassword';
+import Profile from './pages/profile/Profile';
 
 const App = () => {
   return (
@@ -18,7 +19,7 @@ const App = () => {
       {/* ── Default Redirect ─────────────────────── */}
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
-
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   );
 };
