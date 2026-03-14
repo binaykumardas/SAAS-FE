@@ -506,13 +506,6 @@ const Profile = () => {
     // `duration-250`       — transition takes 250ms
     <div className="min-h-screen bg-bg transition-colors duration-250">
 
-      {/* ── Top accent stripe ──────────────────────────────
-          A thin horizontal line at the top of the page
-          using the accent color (blue in light, soft blue in dark).
-          `h-0.5` = 2px height | `w-full` = full width | `bg-accent` = accent color
-      */}
-      <div className="h-0.5 w-full bg-accent" />
-
       {/* ── Page content wrapper ────────────────────────────
           `max-w-6xl`     — caps width at 1152px on large screens
           `mx-auto`       — centres the content horizontally
