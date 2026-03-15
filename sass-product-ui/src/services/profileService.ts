@@ -108,3 +108,51 @@ export const updateProjects = async (
   // ─────────────────────────────────────────
   return data;
 }
+
+export const updateExperiences = async (
+  data: Experience,
+): Promise<Experience> => {
+  await delay(400);
+  // ─── Swap this block for real API call ───
+  // const res = await fetch('/api/profile/experiences', {
+  //   method:  'PATCH',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body:    JSON.stringify(data),
+  // });
+  // if (!res.ok) throw new Error('Failed to update experiences');
+  // return res.json();
+  // ─────────────────────────────────────────
+  return data;
+}
+
+export const updateEducations = async (
+  data: Education,
+): Promise<Education> => {
+  await delay(400);
+  // ─── Swap this block for real API call ───
+  // const res = await fetch('/api/profile/educations', {
+  //   method:  'PATCH',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body:    JSON.stringify(data),
+  // });
+  // if (!res.ok) throw new Error('Failed to update educations');
+  // return res.json();
+  // ─────────────────────────────────────────
+  return data;
+}
+
+export const updateAchievements = async (
+  data: Achievement,
+): Promise<Achievement> => {
+  await delay(400);
+  // ─── Swap this block for real API call ───
+  // const res = await fetch('/api/profile/achievements', {
+  //   method:  'PATCH',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body:    JSON.stringify(data),
+  // });
+  // if (!res.ok) throw new Error('Failed to update achievements');
+  // return res.json();
+  // ─────────────────────────────────────────
+  return data;
+}

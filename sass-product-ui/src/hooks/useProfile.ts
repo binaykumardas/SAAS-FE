@@ -2,33 +2,34 @@
 // src/hooks/useProfile.ts
 import { useState, useEffect, useCallback } from 'react';
 import {
-  fetchProfile,
-  updateBasicDetails,
-  updateCollaboration,
-  updateSkills,
-  updateProjects, // ✅ Make sure this exists in profileService.ts
+  fetchProfile, updateBasicDetails, updateCollaboration,
+  updateSkills, updateProjects,
+  updateExperiences, updateEducations, updateAchievements, // ✅ Assumes these exist in your profileService
   type ProfileData,
 } from '../services/profileService';
-import type { BasicDetails, Collaboration, Skill, Project } from '../shared/model/profile'; // ✅ Import Project
+import type { BasicDetails, Collaboration, Skill, Project, Experience, Education, Achievement } from '../shared/model/profile';
 
 interface UseProfileReturn {
-  data:    ProfileData | null;
+  data: ProfileData | null;
   loading: boolean;
-  saving:  boolean;
-  error:   string | null;
+  saving: boolean;
+  error: string | null;
 
-  saveBasic:         (draft: BasicDetails)  => Promise<void>;
+  saveBasic: (draft: BasicDetails) => Promise<void>;
   saveCollaboration: (draft: Collaboration) => Promise<void>;
-  saveSkills:        (skills: Skill[]) => Promise<void>;
-  saveProjects:      (projects: Project[]) => Promise<void>; // ✅ New Projects function
-  refetch:           () => void;
+  saveSkills: (skills: Skill[]) => Promise<void>;
+  saveProjects: (projects: Project[]) => Promise<void>;
+  saveExperiences: (experiences: Experience[]) => Promise<void>;
+  saveEducations: (educations: Education[]) => Promise<void>;
+  saveAchievements: (achievements: Achievement[]) => Promise<void>;
+  refetch: () => void;
 }
 
 const useProfile = (): UseProfileReturn => {
   const [data, setData] = useState<ProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const[loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const[error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const loadProfile = useCallback(async () => {
     setLoading(true); setError(null);
@@ -40,7 +41,7 @@ const useProfile = (): UseProfileReturn => {
     } finally {
       setLoading(false);
     }
-  },[]);
+  }, []);
 
   useEffect(() => { loadProfile(); }, [loadProfile]);
 
@@ -68,7 +69,6 @@ const useProfile = (): UseProfileReturn => {
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
   };
 
-  // ✅ New function to save Projects array
   const saveProjects = async (projects: Project[]) => {
     setSaving(true); setError(null);
     try {
@@ -77,9 +77,33 @@ const useProfile = (): UseProfileReturn => {
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
   };
 
+  const saveExperiences = async (experiences: Experience[]) => {
+    setSaving(true); setError(null);
+    try {
+      const updated = (await updateExperiences(experiences as any)) as unknown as Experience[];
+      setData(prev => prev ? { ...prev, experiences: updated } : prev);
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
+  };
+
+  const saveEducations = async (educations: Education[]) => {
+    setSaving(true); setError(null);
+    try {
+      const updated = (await updateEducations(educations as any)) as unknown as Education[];
+      setData(prev => prev ? { ...prev, educations: updated } : prev);
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
+  };
+
+  const saveAchievements = async (achievements: Achievement[]) => {
+    setSaving(true); setError(null);
+    try {
+      const updated = (await updateAchievements(achievements as any)) as unknown as Achievement[];
+      setData(prev => prev ? { ...prev, achievements: updated } : prev);
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
+  };
+
   return {
     data, loading, saving, error,
-    saveBasic, saveCollaboration, saveSkills, saveProjects, refetch: loadProfile,
+    saveBasic, saveCollaboration, saveSkills, saveProjects, saveExperiences, saveEducations, saveAchievements, refetch: loadProfile,
   };
 };
 

@@ -1,17 +1,15 @@
 /**
  * @file ProfileModals.tsx
  * @location src/components/share-profile/ProfileModals.tsx
- *
- * @description
- * Contains all edit/add modal components for the Profile page.
- * Every modal in this file uses the shared `EditModal` wrapper component.
  */
 
 import React, { useState } from 'react';
 import EditModal from '../EditModal';
 import { FormInput, FormSelect, FormTextarea } from './ProfileUI';
-// ✅ Added 'Project' to the type imports
-import type { BasicDetails, Collaboration, TabKey, Skill, SkillLevel, Project } from '../../shared/model/profile';
+import type { 
+  BasicDetails, Collaboration, Skill, SkillLevel, 
+  Project, Experience, Education, Achievement 
+} from '../../shared/model/profile';
 
 // ─────────────────────────────────────────────────────────────
 // COMPONENT 1 — BasicModal
@@ -19,12 +17,8 @@ import type { BasicDetails, Collaboration, TabKey, Skill, SkillLevel, Project } 
 export const BasicModal = ({
   isOpen, onClose, onSave, saving = false, draft, setDraft,
 }: {
-  isOpen:   boolean;
-  onClose:  () => void;
-  onSave:   () => void;
-  saving?:  boolean;
-  draft:    BasicDetails;
-  setDraft: React.Dispatch<React.SetStateAction<BasicDetails | null>>;
+  isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
+  draft: BasicDetails; setDraft: React.Dispatch<React.SetStateAction<BasicDetails | null>>;
 }) => (
   <EditModal title="Edit your basic details information." isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
     <div className="grid grid-cols-2 gap-4">
@@ -46,12 +40,8 @@ export const BasicModal = ({
 export const CollaborateModal = ({
   isOpen, onClose, onSave, saving = false, draft, setDraft,
 }: {
-  isOpen:   boolean;
-  onClose:  () => void;
-  onSave:   () => void;
-  saving?:  boolean;
-  draft:    Collaboration;
-  setDraft: React.Dispatch<React.SetStateAction<Collaboration | null>>;
+  isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
+  draft: Collaboration; setDraft: React.Dispatch<React.SetStateAction<Collaboration | null>>;
 }) => (
   <EditModal title="Edit your collaboration preferences." isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
     <div className="grid grid-cols-2 gap-4">
@@ -71,20 +61,16 @@ export const CollaborateModal = ({
 export const SkillsModal = ({
   isOpen, onClose, onSave, saving = false, draft, setDraft,
 }: {
-  isOpen:   boolean;
-  onClose:  () => void;
-  onSave:   () => void;
-  saving?:  boolean;
-  draft:    Skill[]; 
-  setDraft: React.Dispatch<React.SetStateAction<Skill[] | null>>; 
+  isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
+  draft: Skill[]; setDraft: React.Dispatch<React.SetStateAction<Skill[] | null>>;
 }) => {
   const[skillName, setSkillName] = useState('');
   const [category, setCategory] = useState('Frontend');
-  const [level, setLevel] = useState<SkillLevel>('Intermediate');
+  const[level, setLevel] = useState<SkillLevel>('Intermediate');
 
   const CATEGORIES =[
-    { label: 'Language', value: 'Language' }, { label: 'Frontend', value: 'Frontend' }, { label: 'Backend',  value: 'Backend' },
-    { label: 'Database', value: 'Database' }, { label: 'Devops',   value: 'Devops' }, { label: 'Tool',     value: 'Tool' },
+    { label: 'Language', value: 'Language' }, { label: 'Frontend', value: 'Frontend' }, { label: 'Backend', value: 'Backend' },
+    { label: 'Database', value: 'Database' }, { label: 'Devops', value: 'Devops' }, { label: 'Tool', value: 'Tool' },
   ];
   const LEVELS =[
     { label: 'Expert', value: 'Expert' }, { label: 'Intermediate', value: 'Intermediate' }, { label: 'Beginner', value: 'Beginner' },
@@ -93,7 +79,7 @@ export const SkillsModal = ({
   const handleAddSkill = () => {
     if (!skillName.trim()) return;
     const newSkill: Skill = { id: Date.now().toString(), name: skillName.trim(), category, level: level as SkillLevel };
-    setDraft(d => d ? [...d, newSkill] : [newSkill]);
+    setDraft(d => d ?[...d, newSkill] : [newSkill]);
     setSkillName('');
   };
 
@@ -131,19 +117,15 @@ export const SkillsModal = ({
 };
 
 // ─────────────────────────────────────────────────────────────
-// COMPONENT 4 — ProjectsModal (NEW)
+// COMPONENT 4 — ProjectsModal
 // ─────────────────────────────────────────────────────────────
 export const ProjectsModal = ({
   isOpen, onClose, onSave, saving = false, draft, setDraft,
 }: {
-  isOpen:   boolean;
-  onClose:  () => void;
-  onSave:   () => void;
-  saving?:  boolean;
-  draft:    Project; // Draft is a single project
-  setDraft: React.Dispatch<React.SetStateAction<Project | null>>;
+  isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
+  draft: Project; setDraft: React.Dispatch<React.SetStateAction<Project | null>>;
 }) => (
-  <EditModal title="Add Project" isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
+  <EditModal title={draft.name ? "Edit Project" : "Add Project"} isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
     <div className="grid grid-cols-2 gap-4">
       <div className="col-span-2">
         <FormInput label="Project Name" value={draft.name} placeholder="e.g. DevConnect" onChange={v => setDraft(d => d ? { ...d, name: v } : d)} />
@@ -154,18 +136,8 @@ export const ProjectsModal = ({
       <div className="col-span-2">
         <FormInput label="Tech Stack (comma separated)" value={draft.techStack.join(', ')} placeholder="React, TypeScript, Node.js" onChange={v => setDraft(d => d ? { ...d, techStack: v.split(',').map(s => s.trim()).filter(Boolean) } : d)} />
       </div>
-      <FormSelect
-        label="Role"
-        value={draft.role}
-        onChange={v => setDraft(d => d ? { ...d, role: v as Project['role'] } : d)}
-        options={[{ label: 'Solo', value: 'Solo' }, { label: 'Lead', value: 'Lead' }, { label: 'Contributor', value: 'Contributor' }]}
-      />
-      <FormSelect
-        label="Status"
-        value={draft.status}
-        onChange={v => setDraft(d => d ? { ...d, status: v as Project['status'] } : d)}
-        options={[{ label: 'In Progress', value: 'In Progress' }, { label: 'Live', value: 'Live' }, { label: 'Archived', value: 'Archived' }]}
-      />
+      <FormSelect label="Role" value={draft.role} onChange={v => setDraft(d => d ? { ...d, role: v as Project['role'] } : d)} options={[{ label: 'Solo', value: 'Solo' }, { label: 'Lead', value: 'Lead' }, { label: 'Contributor', value: 'Contributor' }]} />
+      <FormSelect label="Status" value={draft.status} onChange={v => setDraft(d => d ? { ...d, status: v as Project['status'] } : d)} options={[{ label: 'In Progress', value: 'In Progress' }, { label: 'Live', value: 'Live' }, { label: 'Archived', value: 'Archived' }]} />
       <FormInput label="GitHub URL (optional)" value={draft.githubUrl || ''} placeholder="https://github.com/..." onChange={v => setDraft(d => d ? { ...d, githubUrl: v } : d)} />
       <FormInput label="Live URL (optional)" value={draft.liveUrl || ''} placeholder="https://..." onChange={v => setDraft(d => d ? { ...d, liveUrl: v } : d)} />
       <div className="col-span-2">
@@ -176,23 +148,86 @@ export const ProjectsModal = ({
 );
 
 // ─────────────────────────────────────────────────────────────
-// COMPONENT 5 — ComingSoonModal
+// COMPONENT 5 — ExperienceModal
 // ─────────────────────────────────────────────────────────────
-export const ComingSoonModal = ({
-  editModal, onClose,
+export const ExperienceModal = ({
+  isOpen, onClose, onSave, saving = false, draft, setDraft,
 }: {
-  editModal: TabKey | null; onClose: () => void;
-}) => {
-  // ✅ Removed 'projects' and 'skills' from here
-  const keys: TabKey[] =['experience', 'education', 'achievements'];
+  isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
+  draft: Experience; setDraft: React.Dispatch<React.SetStateAction<Experience | null>>;
+}) => (
+  <EditModal title={draft.company ? "Edit Experience" : "Add Experience"} isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
+    <div className="grid grid-cols-2 gap-4">
+      <FormInput label="Company Name" value={draft.company} placeholder="e.g. TechCorp" onChange={v => setDraft(d => d ? { ...d, company: v } : d)} />
+      <FormInput label="Job Title / Role" value={draft.role} placeholder="e.g. Frontend Developer" onChange={v => setDraft(d => d ? { ...d, role: v } : d)} />
+      <div className="col-span-2">
+        <FormSelect label="Employment Type" value={draft.type} onChange={v => setDraft(d => d ? { ...d, type: v } : d)} options={[
+          { label: 'Full-time', value: 'Full-time' }, { label: 'Part-time', value: 'Part-time' }, 
+          { label: 'Internship', value: 'Internship' }, { label: 'Freelance', value: 'Freelance' }, { label: 'Contract', value: 'Contract' }
+        ]} />
+      </div>
+      <FormInput label="Start Date" value={draft.startDate} placeholder="e.g. Jan 2023" onChange={v => setDraft(d => d ? { ...d, startDate: v } : d)} />
+      <FormInput label="End Date" value={draft.endDate} placeholder="e.g. Present, or Dec 2023" onChange={v => setDraft(d => d ? { ...d, endDate: v } : d)} />
+      <div className="col-span-2">
+        <FormTextarea label="Description" value={draft.description} placeholder="What did you do? What were your achievements?" rows={3} onChange={v => setDraft(d => d ? { ...d, description: v } : d)} />
+      </div>
+    </div>
+  </EditModal>
+);
 
-  return (
-    <>
-      {keys.map(key => (
-        <EditModal key={key} title={`Add ${key.charAt(0).toUpperCase() + key.slice(1)}`} isOpen={editModal === key} onClose={onClose} onSave={onClose}>
-          <p className="text-sm text-secondary py-6 text-center">Full {key} form — connect your API and build the form here.</p>
-        </EditModal>
-      ))}
-    </>
-  );
-};
+// ─────────────────────────────────────────────────────────────
+// COMPONENT 6 — EducationModal
+// ─────────────────────────────────────────────────────────────
+export const EducationModal = ({
+  isOpen, onClose, onSave, saving = false, draft, setDraft,
+}: {
+  isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
+  draft: Education; setDraft: React.Dispatch<React.SetStateAction<Education | null>>;
+}) => (
+  <EditModal title={draft.institution ? "Edit Education" : "Add Education"} isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
+    <div className="grid grid-cols-2 gap-4">
+      <div className="col-span-2">
+        <FormInput label="Institution / School" value={draft.institution} placeholder="e.g. KIIT University" onChange={v => setDraft(d => d ? { ...d, institution: v } : d)} />
+      </div>
+      <FormInput label="Degree / Certificate" value={draft.degree} placeholder="e.g. B.Tech Computer Science" onChange={v => setDraft(d => d ? { ...d, degree: v } : d)} />
+      <FormSelect label="Type" value={draft.type} onChange={v => setDraft(d => d ? { ...d, type: v } : d)} options={[
+        { label: 'Degree', value: 'Degree' }, { label: 'Certification', value: 'Certification' }, 
+        { label: 'Bootcamp', value: 'Bootcamp' }, { label: 'Course', value: 'Course' }
+      ]} />
+      <FormInput label="Start Year" value={draft.startYear} placeholder="e.g. 2020" onChange={v => setDraft(d => d ? { ...d, startYear: v } : d)} />
+      <FormInput label="End Year" value={draft.endYear} placeholder="e.g. 2024" onChange={v => setDraft(d => d ? { ...d, endYear: v } : d)} />
+      <div className="col-span-2">
+        <FormInput label="Link (optional)" value={draft.link || ''} placeholder="https://..." onChange={v => setDraft(d => d ? { ...d, link: v } : d)} />
+      </div>
+    </div>
+  </EditModal>
+);
+
+// ─────────────────────────────────────────────────────────────
+// COMPONENT 7 — AchievementsModal
+// ─────────────────────────────────────────────────────────────
+export const AchievementsModal = ({
+  isOpen, onClose, onSave, saving = false, draft, setDraft,
+}: {
+  isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
+  draft: Achievement; setDraft: React.Dispatch<React.SetStateAction<Achievement | null>>;
+}) => (
+  <EditModal title={draft.title ? "Edit Achievement" : "Add Achievement"} isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
+    <div className="grid grid-cols-2 gap-4">
+      <div className="col-span-2">
+        <FormInput label="Title" value={draft.title} placeholder="e.g. HackIndia 2023 — 2nd Place" onChange={v => setDraft(d => d ? { ...d, title: v } : d)} />
+      </div>
+      <FormSelect label="Type" value={draft.type} onChange={v => setDraft(d => d ? { ...d, type: v } : d)} options={[
+        { label: 'Hackathon', value: 'Hackathon' }, { label: 'Open Source', value: 'Open Source' }, 
+        { label: 'Award', value: 'Award' }, { label: 'Publication', value: 'Publication' }
+      ]} />
+      <FormInput label="Date" value={draft.date} placeholder="e.g. 15 August 2023" onChange={v => setDraft(d => d ? { ...d, date: v } : d)} />
+      <div className="col-span-2">
+        <FormTextarea label="Description" value={draft.description} placeholder="Describe what you achieved..." rows={3} onChange={v => setDraft(d => d ? { ...d, description: v } : d)} />
+      </div>
+      <div className="col-span-2">
+        <FormInput label="Link (optional)" value={draft.link || ''} placeholder="https://..." onChange={v => setDraft(d => d ? { ...d, link: v } : d)} />
+      </div>
+    </div>
+  </EditModal>
+);
