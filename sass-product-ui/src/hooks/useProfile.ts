@@ -1,47 +1,37 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/hooks/useProfile.ts
-// Custom hook that fetches profile data and exposes
-// loading, error, data, and save handlers.
-//
-// This is the only file that talks to profileService.ts.
-// Components just call useProfile() and get back ready-to-use data.
-
 import { useState, useEffect, useCallback } from 'react';
 import {
   fetchProfile,
   updateBasicDetails,
   updateCollaboration,
   updateSkills,
+  updateProjects, // ✅ Make sure this exists in profileService.ts
   type ProfileData,
 } from '../services/profileService';
-import type { BasicDetails, Collaboration, Skill } from '../shared/model/profile';
+import type { BasicDetails, Collaboration, Skill, Project } from '../shared/model/profile'; // ✅ Import Project
 
 interface UseProfileReturn {
-  // ── Data ──
   data:    ProfileData | null;
-
-  // ── Status ──
   loading: boolean;
   saving:  boolean;
   error:   string | null;
 
-  // ── Actions ──
   saveBasic:         (draft: BasicDetails)  => Promise<void>;
   saveCollaboration: (draft: Collaboration) => Promise<void>;
-  saveSkills:        (skills: Skill[]) => Promise<void>; // ✅ Fixed: Expects array of skills
+  saveSkills:        (skills: Skill[]) => Promise<void>;
+  saveProjects:      (projects: Project[]) => Promise<void>; // ✅ New Projects function
   refetch:           () => void;
 }
 
 const useProfile = (): UseProfileReturn => {
-  const[data,    setData]    = useState<ProfileData | null>(null);
+  const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving,  setSaving]  = useState(false);
-  const[error,   setError]   = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const[error, setError] = useState<string | null>(null);
 
-  // ── Fetch on mount ───────────────────────────────────────
   const loadProfile = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     try {
       const result = await fetchProfile();
       setData(result);
@@ -52,63 +42,44 @@ const useProfile = (): UseProfileReturn => {
     }
   },[]);
 
-  useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+  useEffect(() => { loadProfile(); }, [loadProfile]);
 
-  // ── Save basic details ───────────────────────────────────
   const saveBasic = async (draft: BasicDetails) => {
-    setSaving(true);
-    setError(null);
+    setSaving(true); setError(null);
     try {
       const updated = await updateBasicDetails(draft);
       setData(prev => prev ? { ...prev, basicDetails: updated } : prev);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
-    } finally {
-      setSaving(false);
-    }
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
   };
 
-  // ── Save collaboration ───────────────────────────────────
   const saveCollaboration = async (draft: Collaboration) => {
-    setSaving(true);
-    setError(null);
+    setSaving(true); setError(null);
     try {
       const updated = await updateCollaboration(draft);
       setData(prev => prev ? { ...prev, collaboration: updated } : prev);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
-    } finally {
-      setSaving(false);
-    }
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
   };
 
-  // ── Save skills ───────────────────────────────────────────
   const saveSkills = async (skills: Skill[]) => {
-    setSaving(true);
-    setError(null);
+    setSaving(true); setError(null);
     try {
-      // ✅ Fixed: Cast 'skills' to any to bypass profileService mismatch,
-      // and cast 'updated' strictly to Skill[] to fix the setData error!
       const updated = (await updateSkills(skills as any)) as unknown as Skill[];
       setData(prev => prev ? { ...prev, skills: updated } : prev);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
-    } finally {
-      setSaving(false);
-    }
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
+  };
+
+  // ✅ New function to save Projects array
+  const saveProjects = async (projects: Project[]) => {
+    setSaving(true); setError(null);
+    try {
+      const updated = (await updateProjects(projects as any)) as unknown as Project[];
+      setData(prev => prev ? { ...prev, projects: updated } : prev);
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } finally { setSaving(false); }
   };
 
   return {
-    data,
-    loading,
-    saving,
-    error,
-    saveBasic,
-    saveCollaboration,
-    saveSkills,
-    refetch: loadProfile,
+    data, loading, saving, error,
+    saveBasic, saveCollaboration, saveSkills, saveProjects, refetch: loadProfile,
   };
 };
 

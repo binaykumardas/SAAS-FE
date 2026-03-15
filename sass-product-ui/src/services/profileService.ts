@@ -92,3 +92,19 @@ export const updateSkills = async (
   // ─────────────────────────────────────────
   return data;
 }
+
+export const updateProjects = async (
+  data: Project,
+): Promise<Project> => {
+  await delay(400);
+  // ─── Swap this block for real API call ───
+  // const res = await fetch('/api/profile/projects', {
+  //   method:  'PATCH',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body:    JSON.stringify(data),
+  // });
+  // if (!res.ok) throw new Error('Failed to update projects');
+  // return res.json();
+  // ─────────────────────────────────────────
+  return data;
+}
