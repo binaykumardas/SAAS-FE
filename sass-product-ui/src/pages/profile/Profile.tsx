@@ -37,15 +37,17 @@ import { useState } from 'react';
 // Collaboration    : shape of the collaboration preferences form data
 //                    { pitch, projectTypes, lookingFor, availability, ... }
 //
+// Skill            : shape of individual skill objects added to the profile
+//
 // TabKey           : union type of all valid tab names
 //                    'basic' | 'skills' | 'projects' | 'collaborate' |
 //                    'experience' | 'education' | 'achievements'
-import type { BasicDetails, Collaboration, TabKey } from '../../shared/model/profile';
+import type { BasicDetails, Collaboration, Skill, TabKey } from '../../shared/model/profile';
 
 // ── Custom hook import ────────────────────────────────────────
 // `useProfile` is our custom data-fetching hook.
 // It calls profileService.ts which reads from profile.json (mock) or real API.
-// It returns: { data, loading, saving, error, saveBasic, saveCollaboration, refetch }
+// It returns: { data, loading, saving, error, saveBasic, saveCollaboration, saveSkills, refetch }
 // We never call profileService.ts directly from the page — always via this hook.
 import useProfile from '../../hooks/useProfile';
 
@@ -78,11 +80,13 @@ import {
 //
 // BasicModal       : edit modal for Basic Details form
 // CollaborateModal : edit modal for Collaboration Preferences form
+// SkillsModal      : edit modal for adding/removing Skills
 // ComingSoonModal  : placeholder modal for tabs not yet wired to API
-//                    (Skills, Projects, Experience, Education, Achievements)
+//                    (Projects, Experience, Education, Achievements)
 import {
   BasicModal,
   CollaborateModal,
+  SkillsModal,
   ComingSoonModal,
 } from '../../components/share-profile/ProfileModals';
 
@@ -159,7 +163,7 @@ export const formatLabel = (val: string) =>
 //           and which tab component to render
 //   label : the display text shown in the tab button
 // ─────────────────────────────────────────────────────────────
-const TABS: { key: TabKey; label: string }[] = [
+const TABS: { key: TabKey; label: string }[] =[
   { key: 'basic',        label: 'Basic'        },
   { key: 'skills',       label: 'Skills'       },
   { key: 'projects',     label: 'Projects'     },
@@ -274,38 +278,8 @@ const Profile = () => {
   // ── Step 1: Get data and actions from the hook ─────────────
   //
   // `useProfile()` calls profileService.ts → profile.json (or real API).
-  // It returns an object we destructure into:
-  //
-  //   data                : ProfileData | null
-  //                         The full profile object from the service.
-  //                         Contains: basicDetails, skills, projects,
-  //                         experiences, educations, collaboration, achievements
-  //                         Is `null` while loading or if fetch failed.
-  //
-  //   loading             : boolean
-  //                         true  → fetch is in progress → show LoadingSkeleton
-  //                         false → fetch is complete
-  //
-  //   saving              : boolean
-  //                         true  → a save (PATCH) request is in progress
-  //                         false → no save in progress
-  //                         Passed to modals to show "Saving..." on the Save button
-  //
-  //   error               : string | null
-  //                         null         → no error
-  //                         "some message" → fetch failed, show ErrorState
-  //
-  //   saveBasic           : (draft: BasicDetails) => Promise<void>
-  //                         Call this to save basic details.
-  //                         Internally calls updateBasicDetails() in the service,
-  //                         then updates `data.basicDetails` with the response.
-  //
-  //   saveCollaboration   : (draft: Collaboration) => Promise<void>
-  //                         Same pattern as saveBasic but for collaboration data.
-  //
-  //   refetch             : () => void
-  //                         Re-runs the initial fetchProfile() call.
-  //                         Used by ErrorState's "Try again" button.
+  // It returns an object we destructure into data, loading, saving, error, 
+  // and the save functions like saveBasic, saveCollaboration, and saveSkills.
   const {
     data,
     loading,
@@ -313,41 +287,20 @@ const Profile = () => {
     error,
     saveBasic,
     saveCollaboration,
+    saveSkills,
     refetch,
   } = useProfile();
 
 
   // ── Step 2: UI state — active tab ──────────────────────────
-  //
   // `activeTab` tracks which tab panel is currently visible.
   // Default is 'basic' — so the Basic Details tab shows on first load.
-  //
-  // Type: TabKey = 'basic' | 'skills' | 'projects' | 'collaborate' |
-  //                'experience' | 'education' | 'achievements'
-  //
-  // When the user clicks a tab button:
-  //   setActiveTab(tab.key) → activeTab changes → component re-renders
-  //   → the matching {activeTab === 'xxx' && <XxxTab />} block becomes true
-  //   → that tab component renders, others don't
   const [activeTab, setActiveTab] = useState<TabKey>('basic');
 
 
   // ── Step 3: UI state — which modal is open ─────────────────
-  //
   // `editModal` tracks which modal is currently open.
-  //
-  // Type: TabKey | null
-  //   null           → no modal is open
-  //   'basic'        → BasicModal is open
-  //   'collaborate'  → CollaborateModal is open
-  //   'skills' etc.  → ComingSoonModal is open
-  //
-  // When openModal('basic') is called:
-  //   editModal = 'basic' → BasicModal receives isOpen={true} → modal appears
-  //
-  // When closeModal() is called:
-  //   editModal = null → all modals receive isOpen={false} → modals disappear
-  const [editModal, setEditModal] = useState<TabKey | null>(null);
+  const[editModal, setEditModal] = useState<TabKey | null>(null);
 
 
   // ── Step 4: Draft state — copy of data being edited ────────
@@ -357,39 +310,13 @@ const Profile = () => {
   // update the real `data` object. If the user clicks Cancel, we want to
   // discard changes. So we keep a COPY (draft) that is modified freely.
   // Only when the user clicks Save do we apply the draft to the real data.
-  //
-  // basicDraft
-  //   Type: BasicDetails | null
-  //   null         → modal is closed, no draft exists
-  //   BasicDetails → modal is open, user is editing this copy
-  //
-  //   Set when: openModal('basic') is called → { ...data.basicDetails }
-  //             (spread operator creates a shallow copy, not a reference)
-  //   Reset when: closeModal() is called → null
-  //
-  // collaborationDraft
-  //   Same pattern as basicDraft but for the Collaboration form.
-  //
-  // NOTE on typing: useState<BasicDetails | null>
-  //   This makes the type compatible with React's Dispatch<SetStateAction<T | null>>
-  //   which is required by the modal components' setDraft prop.
-  //   Without `| null` TypeScript would throw a type error.
   const [basicDraft,         setBasicDraft]         = useState<BasicDetails | null>(null);
   const [collaborationDraft, setCollaborationDraft] = useState<Collaboration | null>(null);
+  const [skillsDraft,        setSkillsDraft]        = useState<Skill[] | null>(null);
 
 
   // ── Step 5: Early returns for loading and error states ─────
-  //
   // These must come AFTER all useState/useEffect calls (React rules of hooks).
-  // They cannot come before the useState calls above.
-  //
-  // `if (loading)` — data is still being fetched, show spinner
-  //   Returns the LoadingSkeleton component immediately, stopping the rest of
-  //   the render from running (no data to display yet anyway).
-  //
-  // `if (error || !data)` — fetch failed OR data is somehow null
-  //   `error ?? 'No data'` means: use `error` if it exists, otherwise 'No data'
-  //   `refetch` is passed as onRetry so the user can try again
   if (loading) return <LoadingSkeleton />;
   if (error || !data) return <ErrorState message={error ?? 'No data'} onRetry={refetch} />;
 
@@ -407,26 +334,13 @@ const Profile = () => {
    * Sets up the draft state and marks the modal as open.
    *
    * @param tab - Which tab's modal to open (e.g. 'basic', 'collaborate')
-   *
-   * How it works:
-   *   1. If tab is 'basic':
-   *      `{ ...data.basicDetails }` creates a SHALLOW COPY of basicDetails.
-   *      This is important — we copy so changes don't affect the original.
-   *      We set this copy as basicDraft.
-   *
-   *   2. If tab is 'collaborate':
-   *      Same pattern — copies collaboration data into collaborationDraft.
-   *
-   *   3. For other tabs ('skills', 'projects' etc.):
-   *      No draft is set — ComingSoonModal doesn't need form state yet.
-   *
-   *   4. `setEditModal(tab)` — tells the UI which modal to show as open.
-   *      BasicModal checks: isOpen={editModal === 'basic'}
-   *      If editModal is 'basic' → isOpen is true → modal shows.
    */
   const openModal = (tab: TabKey) => {
+    // Create SHALLOW COPIES so changes don't affect the original until saved.
     if (tab === 'basic')       setBasicDraft({ ...data.basicDetails });
     if (tab === 'collaborate') setCollaborationDraft({ ...data.collaboration });
+    if (tab === 'skills')      setSkillsDraft([...(data.skills || [])]); 
+    
     setEditModal(tab);
   };
 
@@ -434,61 +348,41 @@ const Profile = () => {
    * closeModal
    * Called when the user clicks Cancel or the X button in any modal.
    * Resets all modal-related state to its initial (closed) values.
-   *
-   * How it works:
-   *   1. setEditModal(null)           — no modal is open
-   *   2. setBasicDraft(null)          — discard any unsaved basic edits
-   *   3. setCollaborationDraft(null)  — discard any unsaved collab edits
-   *
-   * Because drafts are null, the modals are conditionally not rendered:
-   *   {basicDraft && <BasicModal ... />}  → false → BasicModal unmounts
-   * This means the modal form is completely reset between opens.
    */
   const closeModal = () => {
     setEditModal(null);
     setBasicDraft(null);
     setCollaborationDraft(null);
+    setSkillsDraft(null);
   };
 
   /**
    * handleSaveBasic
    * Called when the user clicks "Save" inside the BasicModal.
-   * Async because saveBasic() makes a (simulated) API call.
-   *
-   * How it works:
-   *   1. `if (!basicDraft) return`
-   *      Guard: if draft is somehow null, do nothing.
-   *      This should never happen in practice (modal is only shown
-   *      when basicDraft exists) but TypeScript requires this check.
-   *
-   *   2. `await saveBasic(basicDraft)`
-   *      Calls the saveBasic function from useProfile hook.
-   *      Inside the hook, this:
-   *        a. Sets saving = true (Save button shows "Saving...")
-   *        b. Calls updateBasicDetails(basicDraft) from profileService
-   *        c. Service sends PATCH request (or mock delay)
-   *        d. Gets back the updated data
-   *        e. Updates data.basicDetails with the response
-   *        f. Sets saving = false
-   *
-   *   3. `closeModal()`
-   *      After save completes, close the modal and clear drafts.
-   *      The UI now shows the updated data from step 2e.
    */
   const handleSaveBasic = async () => {
     if (!basicDraft) return;
-    await saveBasic(basicDraft);
+    if (saveBasic) await saveBasic(basicDraft);
     closeModal();
   };
 
   /**
    * handleSaveCollaboration
-   * Identical pattern to handleSaveBasic but for collaboration data.
    * Called when "Save" is clicked inside CollaborateModal.
    */
   const handleSaveCollaboration = async () => {
     if (!collaborationDraft) return;
-    await saveCollaboration(collaborationDraft);
+    if (saveCollaboration) await saveCollaboration(collaborationDraft);
+    closeModal();
+  };
+
+  /**
+   * handleSaveSkills
+   * Called when "Save" is clicked inside SkillsModal.
+   */
+  const handleSaveSkills = async () => {
+    if (!skillsDraft) return;
+    if (saveSkills) await saveSkills(skillsDraft);
     closeModal();
   };
 
@@ -617,7 +511,7 @@ const Profile = () => {
             {activeTab === 'skills' && (
               <SkillsTab
                 skills={data.skills}          // array of { id, name, level, category }
-                onEdit={() => openModal('skills')}  // opens ComingSoonModal (not yet wired)
+                onEdit={() => openModal('skills')}  // opens Real Skills Modal!
               />
             )}
 
@@ -676,25 +570,6 @@ const Profile = () => {
           Conditional rendering: `{basicDraft && <BasicModal ... />}`
           basicDraft is null  → modal is NOT in the DOM at all
           basicDraft has data → modal IS in the DOM and may be open or closed
-
-          Why render this way?
-            When basicDraft is null (modal closed), the component is fully
-            UNMOUNTED. This means the form resets completely each time
-            it is opened — no stale values from a previous session.
-
-          Props:
-            isOpen    : boolean — true when editModal === 'basic'
-                        Controls the visible/hidden state of the modal overlay
-            onClose   : closeModal() — resets all draft and modal state
-            onSave    : handleSaveBasic() — saves draft via hook, then closes
-            saving    : boolean from hook — true while API call in progress
-                        Modal passes this to its Save button to show "Saving..."
-            draft     : basicDraft — the copy of data the form is editing
-                        NOTE: we've already checked basicDraft is non-null
-                        with `{basicDraft && ...}` so TypeScript is happy
-            setDraft  : setBasicDraft — React setState function passed to modal
-                        Modal calls this to update the draft as the user types
-                        Type: Dispatch<SetStateAction<BasicDetails | null>>
       */}
       {basicDraft && (
         <BasicModal
@@ -709,8 +584,6 @@ const Profile = () => {
 
       {/* ── Collaborate Modal ────────────────────────────────
           Identical pattern to BasicModal above.
-          Only shown when collaborationDraft is not null (modal was opened).
-          isOpen is true only when editModal === 'collaborate'.
       */}
       {collaborationDraft && (
         <CollaborateModal
@@ -723,13 +596,23 @@ const Profile = () => {
         />
       )}
 
+      {/* ── Skills Modal ────────────────────────────────
+          Wired up to our new Draft array pattern for adding/removing multiple tags
+      */}
+      {skillsDraft && (
+        <SkillsModal
+          isOpen={editModal === 'skills'}
+          onClose={closeModal}
+          onSave={handleSaveSkills}
+          saving={saving}
+          draft={skillsDraft}
+          setDraft={setSkillsDraft}
+        />
+      )}
+
       {/* ── Coming Soon Modal ────────────────────────────────
           Always rendered (no conditional wrapper) because it handles
-          multiple tabs (skills, projects, experience, education, achievements).
-          It loops over those keys internally and renders one EditModal per key.
-          Each EditModal checks: isOpen={editModal === key}
-          Only the matching one will be visible at any time.
-          onClose resets editModal to null, closing the modal.
+          multiple tabs (projects, experience, education, achievements).
       */}
       <ComingSoonModal editModal={editModal} onClose={closeModal} />
 
@@ -738,7 +621,4 @@ const Profile = () => {
 };
 
 // ── Default export ────────────────────────────────────────────
-// `export default Profile` makes this component importable as:
-// import Profile from './pages/Profile'
-// (no curly braces needed for default exports)
 export default Profile;

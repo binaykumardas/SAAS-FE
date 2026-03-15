@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 
 const Header = () => {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const[isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [isScrolled, setIsScrolled] = useState<boolean>(false); // 1. Added scroll state
   const location = useLocation();
 
   useEffect(() => {
@@ -19,6 +20,16 @@ const Header = () => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
+  // 2. Add scroll event listener
+  useEffect(() => {
+    const handleScroll = () => {
+      // Trigger floating state after scrolling down 20px
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const navLinks =[
     { name: 'Home', path: '/' },
     { name: 'My Profile', path: '/profile' },
@@ -26,8 +37,19 @@ const Header = () => {
   ];
 
   return (
-    <header className="bg-surface/90 backdrop-blur-md border-b border-border sticky top-0 z-50 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    // 3. Toggle outer background, border, and padding
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'pt-4 px-4 sm:px-6' // Detach from top/sides on scroll
+        : 'bg-surface/90 backdrop-blur-md border-b border-border' // Standard landing look
+    }`}>
+      
+      {/* 4. Transform inner container into floating pill */}
+      <div className={`mx-auto flex items-center justify-between h-16 transition-all duration-300 ${
+        isScrolled 
+          ? 'max-w-5xl bg-surface/90 backdrop-blur-md border border-border rounded-full shadow-lg px-6' 
+          : 'max-w-7xl px-6'
+      }`}>
         
         {/* Left Section: Logo & Desktop Nav Links */}
         <div className="flex items-center gap-8">
@@ -128,8 +150,13 @@ const Header = () => {
         </div>
       </div>
 
+      {/* 5. Update mobile menu positioning to top-full to seamlessly adapt */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-16 left-0 w-full bg-surface border-b border-border shadow-lg py-4 px-6 flex flex-col gap-4 z-40">
+        <div className={`md:hidden absolute w-full bg-surface shadow-lg py-4 px-6 flex flex-col gap-4 z-40 transition-all duration-300 ${
+          isScrolled 
+            ? 'top-full mt-2 w-[calc(100%-2rem)] left-4 right-4 rounded-2xl border border-border' 
+            : 'top-full left-0 border-b border-border'
+        }`}>
           <div className="relative">
             <svg className="w-4 h-4 text-muted absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             <input
