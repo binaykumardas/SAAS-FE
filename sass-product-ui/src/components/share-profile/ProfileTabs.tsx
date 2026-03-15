@@ -1,3 +1,8 @@
+/**
+ * @file ProfileTabs.tsx
+ * @location src/components/share-profile/ProfileTabs.tsx
+ */
+
 import {
   DetailField, SectionCard, SkillChip, Tag,
   StatusBadge, EmptyState, ListHeader,
@@ -7,23 +12,33 @@ import type {
   Education, Collaboration, Achievement,
 } from '../../shared/model/profile';
 
+// ── Shared Edit Icon for list items ──
+const EditIconButton = ({ onClick }: { onClick: () => void }) => (
+  <button 
+    onClick={onClick} 
+    className="text-muted hover:text-accent p-1 transition-colors"
+    title="Edit"
+  >
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+    </svg>
+  </button>
+);
+
 // ── Tab 1: Basic Details ──────────────────────────────────────
 export const BasicTab = ({
   basic, formatDate, formatLabel, onEdit,
 }: {
-  basic:       BasicDetails;
-  formatDate:  (d: string) => string;
-  formatLabel: (v: string) => string;
-  onEdit:      () => void;
+  basic: BasicDetails; formatDate: (d: string) => string; formatLabel: (v: string) => string; onEdit: () => void;
 }) => (
   <SectionCard title="Basic Details" onEdit={onEdit}>
     <div className="grid grid-cols-2 gap-x-8 gap-y-5">
-      <DetailField label="First Name"     value={basic.firstName}                  />
-      <DetailField label="Last Name"      value={basic.lastName}                   />
-      <DetailField label="Mobile"         value={basic.mobile}                     />
-      <DetailField label="Gender"         value={formatLabel(basic.gender)}        />
-      <DetailField label="Dev Type"      value={formatLabel(basic.devType)}       />
-      <DetailField label="Date of Birth"  value={formatDate(basic.dateOfBirth)}    />
+      <DetailField label="First Name" value={basic.firstName} />
+      <DetailField label="Last Name" value={basic.lastName} />
+      <DetailField label="Mobile" value={basic.mobile} />
+      <DetailField label="Gender" value={formatLabel(basic.gender)} />
+      <DetailField label="Dev Type" value={formatLabel(basic.devType)} />
+      <DetailField label="Date of Birth" value={formatDate(basic.dateOfBirth)} />
     </div>
     <div className="mt-5 pt-5 border-t border-border">
       <DetailField label="About Me" value={basic.aboutMe} />
@@ -35,10 +50,9 @@ export const BasicTab = ({
 export const SkillsTab = ({
   skills, onEdit,
 }: {
-  skills: Skill[];
-  onEdit: () => void;
+  skills: Skill[]; onEdit: () => void;
 }) => {
-  const byCategory = skills.reduce<Record<string, Skill[]>>((acc, s) => {
+  const byCategory = (skills ||[]).reduce<Record<string, Skill[]>>((acc, s) => {
     if (!acc[s.category]) acc[s.category] = [];
     acc[s.category].push(s);
     return acc;
@@ -49,28 +63,18 @@ export const SkillsTab = ({
       <div className="flex flex-col gap-5">
         {Object.entries(byCategory).map(([category, catSkills]) => (
           <div key={category}>
-            <p className="text-xs font-bold uppercase tracking-wider text-muted mb-2">
-              {category}
-            </p>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted mb-2">{category}</p>
             <div className="flex flex-wrap gap-2">
-              {catSkills.map(s => (
-                <SkillChip key={s.id} name={s.name} level={s.level} />
-              ))}
+              {catSkills.map(s => <SkillChip key={s.id} name={s.name} level={s.level} />)}
             </div>
           </div>
         ))}
       </div>
       <div className="mt-4 pt-4 border-t border-border flex items-center gap-4">
         <span className="text-xs text-muted">Legend:</span>
-        <span className="text-xs text-secondary">
-          <span className="font-bold text-accent">E</span> = Expert
-        </span>
-        <span className="text-xs text-secondary">
-          <span className="font-bold">I</span> = Intermediate
-        </span>
-        <span className="text-xs text-secondary">
-          <span className="font-bold">B</span> = Beginner
-        </span>
+        <span className="text-xs text-secondary"><span className="font-bold text-accent">E</span> = Expert</span>
+        <span className="text-xs text-secondary"><span className="font-bold">I</span> = Intermediate</span>
+        <span className="text-xs text-secondary"><span className="font-bold">B</span> = Beginner</span>
       </div>
     </SectionCard>
   );
@@ -78,51 +82,36 @@ export const SkillsTab = ({
 
 // ── Tab 3: Projects ───────────────────────────────────────────
 export const ProjectsTab = ({
-  projects, onAdd,
+  projects, onAdd, onEdit, // ✅ Added onEdit
 }: {
-  projects: Project[];
-  onAdd:    () => void;
+  projects: Project[]; onAdd: () => void; onEdit: (id: string) => void;
 }) => {
-  if (projects.length === 0) {
-    return (
-      <EmptyState
-        icon="🚀"
-        title="No projects yet"
-        description="Add projects you've built to showcase your work"
-        actionLabel="+ Add Project"
-        onAction={onAdd}
-      />
-    );
+  if (!projects || projects.length === 0) {
+    return <EmptyState icon="🚀" title="No projects yet" description="Add projects you've built to showcase your work" actionLabel="+ Add Project" onAction={onAdd} />;
   }
 
   return (
     <div className="flex flex-col gap-4">
       <ListHeader title="Projects" onAdd={onAdd} />
       {projects.map(p => (
-        <div key={p.id}
-          className="bg-surface border border-border rounded-2xl p-5 shadow-card">
+        <div key={p.id} className="bg-surface border border-border rounded-2xl p-5 shadow-card">
           <div className="flex items-start justify-between gap-3 mb-2">
             <div>
               <h3 className="text-sm font-bold text-text">{p.name}</h3>
               <p className="text-xs text-secondary mt-0.5">{p.description}</p>
             </div>
-            <StatusBadge status={p.status} />
+            {/* ✅ Added Edit Button next to Status Badge */}
+            <div className="flex items-center gap-3">
+              <StatusBadge status={p.status} />
+              <EditIconButton onClick={() => onEdit(p.id)} />
+            </div>
           </div>
           <div className="flex flex-wrap gap-1.5 mb-3">
             {p.techStack.map(t => <Tag key={t} label={t} />)}
           </div>
           <div className="flex items-center gap-4 pt-3 border-t border-border">
-            <span className="text-xs text-muted">
-              Role: <span className="text-text font-semibold">{p.role}</span>
-            </span>
-            {p.lookingFor.length > 0 && (
-              <span className="text-xs text-muted">
-                Looking for:{' '}
-                <span className="text-accent font-semibold">
-                  {p.lookingFor.join(', ')}
-                </span>
-              </span>
-            )}
+            <span className="text-xs text-muted">Role: <span className="text-text font-semibold">{p.role}</span></span>
+            {p.lookingFor.length > 0 && <span className="text-xs text-muted">Looking for: <span className="text-accent font-semibold">{p.lookingFor.join(', ')}</span></span>}
           </div>
         </div>
       ))}
@@ -134,42 +123,28 @@ export const ProjectsTab = ({
 export const CollaborateTab = ({
   collaboration, onEdit,
 }: {
-  collaboration: Collaboration;
-  onEdit:        () => void;
+  collaboration: Collaboration; onEdit: () => void;
 }) => (
   <SectionCard title="Looking to Collaborate" onEdit={onEdit}>
     <div className="flex flex-col gap-5">
       <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-muted mb-2">
-          My Pitch
-        </p>
+        <p className="text-xs font-bold uppercase tracking-wider text-muted mb-2">My Pitch</p>
         <p className="text-sm text-secondary leading-relaxed">{collaboration.pitch}</p>
       </div>
       <div className="grid grid-cols-2 gap-x-8 gap-y-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
-            Project Types
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {collaboration.projectTypes.map(t => <Tag key={t} label={t} />)}
-          </div>
+          <p className="text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Project Types</p>
+          <div className="flex flex-wrap gap-1.5">{collaboration.projectTypes.map(t => <Tag key={t} label={t} />)}</div>
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
-            Looking For
-          </p>
+          <p className="text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Looking For</p>
           <div className="flex flex-wrap gap-1.5">
-            {collaboration.lookingFor.map(t => (
-              <span key={t} className="text-xs font-semibold px-2.5 py-1
-                rounded-lg bg-accent-tint text-accent border border-accent-tint">
-                {t}
-              </span>
-            ))}
+            {collaboration.lookingFor.map(t => <span key={t} className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-accent-tint text-accent border border-accent-tint">{t}</span>)}
           </div>
         </div>
         <DetailField label="Availability" value={collaboration.availability} />
-        <DetailField label="Work Style"   value={collaboration.workStyle}    />
-        <DetailField label="Time Zone"    value={collaboration.timezone}     />
+        <DetailField label="Work Style" value={collaboration.workStyle} />
+        <DetailField label="Time Zone" value={collaboration.timezone} />
       </div>
     </div>
   </SectionCard>
@@ -177,42 +152,31 @@ export const CollaborateTab = ({
 
 // ── Tab 5: Experience ─────────────────────────────────────────
 export const ExperienceTab = ({
-  experiences, onAdd,
+  experiences, onAdd, onEdit // ✅ Added onEdit
 }: {
-  experiences: Experience[];
-  onAdd:       () => void;
+  experiences: Experience[]; onAdd: () => void; onEdit: (id: string) => void;
 }) => {
-  if (experiences.length === 0) {
-    return (
-      <EmptyState
-        icon="💼"
-        title="No experience added"
-        description="Add your work history, internships or freelance projects"
-        actionLabel="+ Add Experience"
-        onAction={onAdd}
-      />
-    );
+  if (!experiences || experiences.length === 0) {
+    return <EmptyState icon="💼" title="No experience added" description="Add your work history, internships or freelance projects" actionLabel="+ Add Experience" onAction={onAdd} />;
   }
 
   return (
     <div className="flex flex-col gap-4">
       <ListHeader title="Experience" onAdd={onAdd} />
       {experiences.map(exp => (
-        <div key={exp.id}
-          className="bg-surface border border-border rounded-2xl p-5 shadow-card">
+        <div key={exp.id} className="bg-surface border border-border rounded-2xl p-5 shadow-card">
           <div className="flex items-start justify-between mb-1">
             <div>
               <h3 className="text-sm font-bold text-text">{exp.role}</h3>
               <p className="text-xs text-accent font-semibold mt-0.5">{exp.company}</p>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider
-              px-2 py-0.5 rounded border bg-raised border-border text-muted">
-              {exp.type}
-            </span>
+            {/* ✅ Added Edit Button next to Type Badge */}
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border bg-raised border-border text-muted">{exp.type}</span>
+              <EditIconButton onClick={() => onEdit(exp.id)} />
+            </div>
           </div>
-          <p className="text-xs text-muted mb-2">
-            {exp.startDate} — {exp.endDate || 'Present'}
-          </p>
+          <p className="text-xs text-muted mb-2">{exp.startDate} — {exp.endDate || 'Present'}</p>
           <p className="text-sm text-secondary leading-relaxed">{exp.description}</p>
         </div>
       ))}
@@ -222,38 +186,29 @@ export const ExperienceTab = ({
 
 // ── Tab 6: Education ──────────────────────────────────────────
 export const EducationTab = ({
-  educations, onAdd,
+  educations, onAdd, onEdit // ✅ Added onEdit
 }: {
-  educations: Education[];
-  onAdd:      () => void;
+  educations: Education[]; onAdd: () => void; onEdit: (id: string) => void;
 }) => {
-  if (educations.length === 0) {
-    return (
-      <EmptyState
-        icon="🎓"
-        title="No education added"
-        description="Add your degrees, bootcamps or certifications"
-        actionLabel="+ Add Education"
-        onAction={onAdd}
-      />
-    );
+  if (!educations || educations.length === 0) {
+    return <EmptyState icon="🎓" title="No education added" description="Add your degrees, bootcamps or certifications" actionLabel="+ Add Education" onAction={onAdd} />;
   }
 
   return (
     <div className="flex flex-col gap-4">
       <ListHeader title="Education" onAdd={onAdd} />
       {educations.map(edu => (
-        <div key={edu.id}
-          className="bg-surface border border-border rounded-2xl p-5 shadow-card">
+        <div key={edu.id} className="bg-surface border border-border rounded-2xl p-5 shadow-card">
           <div className="flex items-start justify-between mb-1">
             <div>
               <h3 className="text-sm font-bold text-text">{edu.degree}</h3>
               <p className="text-xs text-accent font-semibold mt-0.5">{edu.institution}</p>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider
-              px-2 py-0.5 rounded border bg-raised border-border text-muted">
-              {edu.type}
-            </span>
+            {/* ✅ Added Edit Button next to Type Badge */}
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border bg-raised border-border text-muted">{edu.type}</span>
+              <EditIconButton onClick={() => onEdit(edu.id)} />
+            </div>
           </div>
           <p className="text-xs text-muted">{edu.startYear} — {edu.endYear}</p>
         </div>
@@ -264,36 +219,26 @@ export const EducationTab = ({
 
 // ── Tab 7: Achievements ───────────────────────────────────────
 export const AchievementsTab = ({
-  achievements, formatDate, onAdd,
+  achievements, formatDate, onAdd, onEdit // ✅ Added onEdit
 }: {
-  achievements: Achievement[];
-  formatDate:   (d: string) => string;
-  onAdd:        () => void;
+  achievements: Achievement[]; formatDate: (d: string) => string; onAdd: () => void; onEdit: (id: string) => void;
 }) => {
-  if (achievements.length === 0) {
-    return (
-      <EmptyState
-        icon="🏆"
-        title="No achievements yet"
-        description="Add hackathons, open source contributions, articles or awards"
-        actionLabel="+ Add Achievement"
-        onAction={onAdd}
-      />
-    );
+  if (!achievements || achievements.length === 0) {
+    return <EmptyState icon="🏆" title="No achievements yet" description="Add hackathons, open source contributions, articles or awards" actionLabel="+ Add Achievement" onAction={onAdd} />;
   }
 
   return (
     <div className="flex flex-col gap-4">
       <ListHeader title="Achievements" onAdd={onAdd} />
       {achievements.map(a => (
-        <div key={a.id}
-          className="bg-surface border border-border rounded-2xl p-5 shadow-card">
+        <div key={a.id} className="bg-surface border border-border rounded-2xl p-5 shadow-card">
           <div className="flex items-start justify-between mb-1">
             <h3 className="text-sm font-bold text-text">{a.title}</h3>
-            <span className="text-[10px] font-bold uppercase tracking-wider
-              px-2 py-0.5 rounded border bg-accent-tint border-accent-tint text-accent">
-              {a.type}
-            </span>
+            {/* ✅ Added Edit Button next to Type Badge */}
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border bg-accent-tint border-accent-tint text-accent">{a.type}</span>
+              <EditIconButton onClick={() => onEdit(a.id)} />
+            </div>
           </div>
           <p className="text-xs text-muted mb-2">{formatDate(a.date)}</p>
           <p className="text-sm text-secondary leading-relaxed">{a.description}</p>
