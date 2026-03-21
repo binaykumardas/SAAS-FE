@@ -39,6 +39,10 @@ const Signup = () => {
     }, 800);
   };
 
+  const onChange = (v: string) => {
+    console.log('Selected option:', v);
+  }
+
   return (
     <div className="min-h-screen bg-bg dark:bg-bg flex items-center justify-center px-4 py-12 transition-colors duration-250">
       <div className="w-full max-w-md">
@@ -126,6 +130,28 @@ const Signup = () => {
                 placeholder="••••••••"
                 className={inputClass}
               />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-text dark:text-text mb-1.5">
+                Engineer Type
+              </label>
+                <select
+                  value='' onChange={e => onChange(e.target.value)}
+                  className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
+                    bg-raised border border-border text-text
+                    transition-all duration-150 cursor-pointer"
+                >
+                  <option value="" disabled>Select an option</option>
+                  <option value="1">Frontend Developer</option>
+                  <option value="2">Backend Developer</option>
+                  <option value="3">Full Stack Developer</option>
+                  <option value="4">DevOps Engineer</option>
+                  <option value="5">Data Scientist</option>
+                  <option value="6">Mobile Developer</option>
+                  <option value="7">QA Engineer</option>
+                  <option value="8">Other</option>
+                </select>
             </div>
 
             <button
