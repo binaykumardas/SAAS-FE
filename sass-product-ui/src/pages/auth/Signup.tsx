@@ -12,6 +12,7 @@ import axios from 'axios';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API, API_VERSION, BASE_URL } from '../../shared/constant/const';
+import Util from '../../shared/utils/utils';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -126,7 +127,7 @@ const Signup = () => {
       role: engineerType
     };
     const response = await axios.post(BASE_URL + API + API_VERSION + `/auth/signup`,PAYLOAD);
-    if(response) {
+    if(Util.isValidObject(response)) {
       setLoading(false);
       navigate('/login'); // Move to next page
     }

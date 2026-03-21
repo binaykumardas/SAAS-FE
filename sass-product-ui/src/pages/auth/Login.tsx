@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API, API_VERSION, BASE_URL } from '../../shared/constant/const';
+import Util from '../../shared/utils/utils';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -87,9 +88,16 @@ const Login = () => {
     }
     const response = await axios.post(BASE_URL + API + API_VERSION + `/auth/login`,PAYLOAD);
       try {
-        if(response) {
-          setLoading(false);
-          navigate('/profile');
+        if(Util.isValidObject(response)) {
+          if(response.data.success) {
+            const loginUser = {
+                id: response?.data?.data?.user?.id,
+                email: response?.data?.data?.user?.email,
+            }
+            Util.setDataToSessionStore("userInfo",loginUser);
+            setLoading(false);
+            navigate('/profile');
+          }
         }
       } catch(e) {
           console.error(e);
