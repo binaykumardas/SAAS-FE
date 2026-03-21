@@ -1,6 +1,8 @@
 /**
  * @file ProfileTabs.tsx
- * @location src/components/share-profile/ProfileTabs.tsx
+ * @description Presentational components for the different sections of the User Profile.
+ * Each tab handles the layout and display logic for specific data types (Experience, Skills, etc.)
+ * and triggers edit/add events back to the parent container.
  */
 
 import {
@@ -12,12 +14,19 @@ import type {
   Education, Collaboration, Achievement,
 } from '../../shared/model/profile';
 
-// ── Shared Edit Icon for list items ──
+/** 
+ * Reusable small button for triggering the edit modal of a specific list item.
+ * @param onClick - Callback function to trigger when the icon is clicked.
+ */
 const EditIconButton = ({ onClick }: { onClick: () => void }) => (
   <button 
-    onClick={onClick} 
+    onClick={(e) => {
+      e.stopPropagation(); // Prevent triggering parent click events if any
+      onClick();
+    }} 
     className="text-muted hover:text-accent p-1 transition-colors"
     title="Edit"
+    aria-label="Edit item" // Added for accessibility
   >
     <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
@@ -25,7 +34,10 @@ const EditIconButton = ({ onClick }: { onClick: () => void }) => (
   </button>
 );
 
-// ── Tab 1: Basic Details ──────────────────────────────────────
+/** 
+ * Tab 1: Basic Details
+ * Displays the user's name, contact info, and "About Me" summary.
+ */
 export const BasicTab = ({
   basic, formatDate, formatLabel, onEdit,
 }: {
@@ -46,12 +58,16 @@ export const BasicTab = ({
   </SectionCard>
 );
 
-// ── Tab 2: Skills ─────────────────────────────────────────────
+/** 
+ * Tab 2: Skills
+ * Groups the user's skills by category (e.g., Frontend, Backend) and displays them as Chips.
+ */
 export const SkillsTab = ({
   skills, onEdit,
 }: {
   skills: Skill[]; onEdit: () => void;
 }) => {
+  // Logic to transform the flat skills array into an object grouped by category
   const byCategory = (skills ||[]).reduce<Record<string, Skill[]>>((acc, s) => {
     if (!acc[s.category]) acc[s.category] = [];
     acc[s.category].push(s);
@@ -70,6 +86,7 @@ export const SkillsTab = ({
           </div>
         ))}
       </div>
+      {/* Legend to explain the abbreviations (E/I/B) used in chips */}
       <div className="mt-4 pt-4 border-t border-border flex items-center gap-4">
         <span className="text-xs text-muted">Legend:</span>
         <span className="text-xs text-secondary"><span className="font-bold text-accent">E</span> = Expert</span>
@@ -80,12 +97,16 @@ export const SkillsTab = ({
   );
 };
 
-// ── Tab 3: Projects ───────────────────────────────────────────
+/** 
+ * Tab 3: Projects
+ * Lists individual project cards with status badges and tech stack tags.
+ */
 export const ProjectsTab = ({
-  projects, onAdd, onEdit, // ✅ Added onEdit
+  projects, onAdd, onEdit,
 }: {
   projects: Project[]; onAdd: () => void; onEdit: (id: string) => void;
 }) => {
+  // Handle case where no projects exist
   if (!projects || projects.length === 0) {
     return <EmptyState icon="🚀" title="No projects yet" description="Add projects you've built to showcase your work" actionLabel="+ Add Project" onAction={onAdd} />;
   }
@@ -100,7 +121,6 @@ export const ProjectsTab = ({
               <h3 className="text-sm font-bold text-text">{p.name}</h3>
               <p className="text-xs text-secondary mt-0.5">{p.description}</p>
             </div>
-            {/* ✅ Added Edit Button next to Status Badge */}
             <div className="flex items-center gap-3">
               <StatusBadge status={p.status} />
               <EditIconButton onClick={() => onEdit(p.id)} />
@@ -119,7 +139,10 @@ export const ProjectsTab = ({
   );
 };
 
-// ── Tab 4: Collaborate ────────────────────────────────────────
+/** 
+ * Tab 4: Collaborate
+ * Displays the user's collaboration "pitch" and work preferences.
+ */
 export const CollaborateTab = ({
   collaboration, onEdit,
 }: {
@@ -150,9 +173,12 @@ export const CollaborateTab = ({
   </SectionCard>
 );
 
-// ── Tab 5: Experience ─────────────────────────────────────────
+/** 
+ * Tab 5: Experience
+ * Lists the user's work history cards.
+ */
 export const ExperienceTab = ({
-  experiences, onAdd, onEdit // ✅ Added onEdit
+  experiences, onAdd, onEdit
 }: {
   experiences: Experience[]; onAdd: () => void; onEdit: (id: string) => void;
 }) => {
@@ -170,7 +196,6 @@ export const ExperienceTab = ({
               <h3 className="text-sm font-bold text-text">{exp.role}</h3>
               <p className="text-xs text-accent font-semibold mt-0.5">{exp.company}</p>
             </div>
-            {/* ✅ Added Edit Button next to Type Badge */}
             <div className="flex items-center gap-3">
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border bg-raised border-border text-muted">{exp.type}</span>
               <EditIconButton onClick={() => onEdit(exp.id)} />
@@ -184,9 +209,12 @@ export const ExperienceTab = ({
   );
 };
 
-// ── Tab 6: Education ──────────────────────────────────────────
+/** 
+ * Tab 6: Education
+ * Lists degrees, bootcamps, or relevant academic certifications.
+ */
 export const EducationTab = ({
-  educations, onAdd, onEdit // ✅ Added onEdit
+  educations, onAdd, onEdit
 }: {
   educations: Education[]; onAdd: () => void; onEdit: (id: string) => void;
 }) => {
@@ -204,7 +232,6 @@ export const EducationTab = ({
               <h3 className="text-sm font-bold text-text">{edu.degree}</h3>
               <p className="text-xs text-accent font-semibold mt-0.5">{edu.institution}</p>
             </div>
-            {/* ✅ Added Edit Button next to Type Badge */}
             <div className="flex items-center gap-3">
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border bg-raised border-border text-muted">{edu.type}</span>
               <EditIconButton onClick={() => onEdit(edu.id)} />
@@ -217,9 +244,12 @@ export const EducationTab = ({
   );
 };
 
-// ── Tab 7: Achievements ───────────────────────────────────────
+/** 
+ * Tab 7: Achievements
+ * Displays awards, contest wins, and certifications with descriptive text.
+ */
 export const AchievementsTab = ({
-  achievements, formatDate, onAdd, onEdit // ✅ Added onEdit
+  achievements, formatDate, onAdd, onEdit
 }: {
   achievements: Achievement[]; formatDate: (d: string) => string; onAdd: () => void; onEdit: (id: string) => void;
 }) => {
@@ -234,7 +264,6 @@ export const AchievementsTab = ({
         <div key={a.id} className="bg-surface border border-border rounded-2xl p-5 shadow-card">
           <div className="flex items-start justify-between mb-1">
             <h3 className="text-sm font-bold text-text">{a.title}</h3>
-            {/* ✅ Added Edit Button next to Type Badge */}
             <div className="flex items-center gap-3">
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border bg-accent-tint border-accent-tint text-accent">{a.type}</span>
               <EditIconButton onClick={() => onEdit(a.id)} />

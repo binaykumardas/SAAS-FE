@@ -1,83 +1,120 @@
+/**
+ * @file ProfileUI.tsx
+ * @description A collection of reusable, atomic UI components for the profile system.
+ * Includes form elements, display fields, badges, and layout wrappers.
+ */
 import type { ReactNode } from 'react';
+import {useId } from 'react';
 
-// ── Display: label + value pair ───────────────────────────────
+/** 
+ * DETAIL FIELD
+ * Used to display a read-only label and value pair (e.g., in the Basic Info tab).
+ */
 export const DetailField = ({
   label, value,
 }: {
-  label: string; value: string;
+  label: string; value: string | undefined | null;
 }) => (
   <div className="flex flex-col gap-1">
     <span className="text-xs font-semibold tracking-wider uppercase text-muted">
       {label}
     </span>
-    <span className="text-sm font-medium text-text">{value}</span>
+    <span className="text-sm font-medium text-text">{value || '—'}</span>
   </div>
 );
 
-// ── Form: text / email / tel / date input ─────────────────────
+/** 
+ * FORM INPUT
+ * A standard text-based input field with a linked label for accessibility.
+ */
 export const FormInput = ({
   label, type = 'text', value, onChange, placeholder,
 }: {
   label: string; type?: string; value: string;
   onChange: (v: string) => void; placeholder?: string;
-}) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-sm font-medium text-text">{label}</label>
-    <input
-      type={type} value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
-        bg-raised border border-border text-text
-        placeholder:text-muted transition-all duration-150"
-    />
-  </div>
-);
+}) => {
+  const id = useId(); // Generates a unique ID for accessibility (linking label to input)
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-sm font-medium text-text">{label}</label>
+      <input
+        id={id}
+        type={type} 
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
+          bg-raised border border-border text-text
+          placeholder:text-muted transition-all duration-150"
+      />
+    </div>
+  );
+};
 
-// ── Form: select dropdown ─────────────────────────────────────
+/** 
+ * FORM SELECT
+ * A styled dropdown menu for selecting from a list of options.
+ */
 export const FormSelect = ({
   label, value, onChange, options,
 }: {
   label: string; value: string;
   onChange: (v: string) => void;
   options: { label: string; value: string }[];
-}) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-sm font-medium text-text">{label}</label>
-    <select
-      value={value} onChange={e => onChange(e.target.value)}
-      className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
-        bg-raised border border-border text-text
-        transition-all duration-150 cursor-pointer"
-    >
-      {options.map(opt => (
-        <option key={opt.value} value={opt.value}>{opt.label}</option>
-      ))}
-    </select>
-  </div>
-);
+}) => {
+  const id = useId();
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-sm font-medium text-text">{label}</label>
+      <select
+        id={id}
+        value={value} 
+        onChange={e => onChange(e.target.value)}
+        className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
+          bg-raised border border-border text-text
+          transition-all duration-150 cursor-pointer"
+      >
+        {options.map(opt => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+    </div>
+  );
+};
 
-// ── Form: textarea ────────────────────────────────────────────
+/** 
+ * FORM TEXTAREA
+ * A multi-line input field, usually used for "About Me" or "Description" sections.
+ */
 export const FormTextarea = ({
   label, value, onChange, placeholder, rows = 3,
 }: {
   label: string; value: string;
   onChange: (v: string) => void;
   placeholder?: string; rows?: number;
-}) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-sm font-medium text-text">{label}</label>
-    <textarea
-      value={value} onChange={e => onChange(e.target.value)}
-      placeholder={placeholder} rows={rows}
-      className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
-        bg-raised border border-border text-text
-        placeholder:text-muted transition-all duration-150 resize-none"
-    />
-  </div>
-);
+}) => {
+  const id = useId();
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-sm font-medium text-text">{label}</label>
+      <textarea
+        id={id}
+        value={value} 
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder} 
+        rows={rows}
+        className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
+          bg-raised border border-border text-text
+          placeholder:text-muted transition-all duration-150 resize-none"
+      />
+    </div>
+  );
+};
 
-// ── Layout: card with title + edit button ─────────────────────
+/** 
+ * SECTION CARD
+ * A wrapper component that provides a white surface, title, and an "Edit" button.
+ */
 export const SectionCard = ({
   title, onEdit, children,
 }: {
@@ -87,6 +124,7 @@ export const SectionCard = ({
     <div className="flex items-center justify-between mb-6">
       <h2 className="text-sm font-bold tracking-tight text-text uppercase">{title}</h2>
       <button
+        type="button"
         onClick={onEdit}
         className="flex items-center gap-1.5 text-xs font-semibold
           text-accent bg-accent-tint hover:bg-accent hover:text-white
@@ -105,7 +143,10 @@ export const SectionCard = ({
   </div>
 );
 
-// ── Layout: icon + label + value row ─────────────────────────
+/** 
+ * INFO ROW
+ * Used in sidebars to show an icon followed by a label and a value.
+ */
 export const InfoRow = ({
   icon, label, value,
 }: {
@@ -123,27 +164,38 @@ export const InfoRow = ({
   </div>
 );
 
-// ── Badge: skill chip with level indicator ────────────────────
+/** 
+ * SKILL CHIP
+ * Displays a skill name and a single letter indicating the level (E/I/B).
+ */
 export const SkillChip = ({
   name, level,
 }: {
   name: string; level: string;
 }) => {
+  // Styles change based on the user's proficiency level
   const levelColor: Record<string, string> = {
     Expert:       'bg-accent-tint text-accent border-accent-tint',
     Intermediate: 'bg-raised text-secondary border-border',
     Beginner:     'bg-raised text-muted border-border',
   };
+  
   return (
     <span className={`inline-flex items-center gap-1.5 text-xs font-semibold
       px-2.5 py-1 rounded-lg border ${levelColor[level] ?? levelColor.Beginner}`}>
       {name}
-      <span className="text-[10px] font-normal opacity-70">{level[0]}</span>
+      {/* BUG FIX: Added optional chaining/fallback to prevent error if level is empty */}
+      <span className="text-[10px] font-normal opacity-70">
+        {(level || 'B')[0]}
+      </span>
     </span>
   );
 };
 
-// ── Badge: plain text tag ─────────────────────────────────────
+/** 
+ * TAG
+ * A simple gray tag used for technology stacks or project types.
+ */
 export const Tag = ({ label }: { label: string }) => (
   <span className="text-xs font-medium px-2.5 py-1 rounded-lg
     bg-raised border border-border text-secondary">
@@ -151,7 +203,10 @@ export const Tag = ({ label }: { label: string }) => (
   </span>
 );
 
-// ── Badge: project status ─────────────────────────────────────
+/** 
+ * STATUS BADGE
+ * Indicates the current state of a project (Live, In Progress, etc.)
+ */
 export const StatusBadge = ({ status }: { status: string }) => {
   const map: Record<string, string> = {
     Live:          'bg-success/10 text-success border-success/20',
@@ -166,7 +221,11 @@ export const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-// ── Layout: empty state with CTA ─────────────────────────────
+/** 
+ * EMPTY STATE
+ * Displayed when a list (like Experiences or Projects) has no data.
+ * Encourages the user to add information.
+ */
 export const EmptyState = ({
   icon, title, description, actionLabel, onAction,
 }: {
@@ -184,6 +243,7 @@ export const EmptyState = ({
       <p className="text-sm text-secondary">{description}</p>
     </div>
     <button
+      type="button"
       onClick={onAction}
       className="mt-1 px-5 py-2.5 rounded-lg text-sm font-semibold
         bg-accent hover:bg-accent-hover text-white
@@ -193,7 +253,10 @@ export const EmptyState = ({
   </div>
 );
 
-// ── Layout: list section header with add button ───────────────
+/** 
+ * LIST HEADER
+ * A section title with a "+ Add" button, used for lists like Projects or Education.
+ */
 export const ListHeader = ({
   title, onAdd,
 }: {
@@ -202,6 +265,7 @@ export const ListHeader = ({
   <div className="flex items-center justify-between">
     <h2 className="text-sm font-bold uppercase tracking-tight text-text">{title}</h2>
     <button
+      type="button"
       onClick={onAdd}
       className="text-xs font-semibold text-accent bg-accent-tint
         hover:bg-accent hover:text-white px-3 py-1.5 rounded-lg
