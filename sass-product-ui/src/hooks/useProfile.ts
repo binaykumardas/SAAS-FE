@@ -1,129 +1,63 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-/**
- * @file hooks/useProfile.ts
- * @description Custom hook that manages the lifecycle of the user profile page.
- * It handles initial data loading, update synchronization, and error states.
- */
-
-// Import React hooks for state management and lifecycle control
+// src/hooks/useProfile.ts
 import { useState, useEffect, useCallback, useRef } from 'react';
-
-// Import API service functions to communicate with the Node.js backend
 import {
   fetchProfile, updateBasicDetails, updateCollaboration,
-  updateSkills, updateProjects,
-  updateExperiences, updateEducations, updateAchievements, 
-  type ProfileData,
+  updateSkills, saveProjectEntry, updateExperiences, 
+  updateEducations, updateAchievements, type ProfileData,
 } from '../services/profileService';
-
-// Import TypeScript interfaces for strict type checking of profile sections
 import type { 
   BasicDetails, Collaboration, Skill, Project, 
   Experience, Education, Achievement 
 } from '../shared/model/profile';
 
-/** 
- * UseProfileReturn Interface
- * Describes exactly what objects and functions this hook provides to the UI components.
- */
 interface UseProfileReturn {
-  data: ProfileData | null;                    // The actual profile data from the database
-  loading: boolean;                            // True only during the very first data fetch
-  saving: boolean;                             // True while any "Update" API call is in progress
-  error: string | null;                        // Stores human-readable error messages for the UI
-  saveBasic: (draft: BasicDetails) => Promise<void>; // Handler for basic info updates
-  saveCollaboration: (draft: Collaboration) => Promise<void>; // Handler for collab preference updates
-  saveSkills: (skills: Skill[]) => Promise<void>; // Handler for the full skills list update
-  saveProjects: (projects: Project[]) => Promise<void>; // Handler for projects list update
-  saveExperiences: (experiences: Experience[]) => Promise<void>; // Handler for experience list update
-  saveEducations: (educations: Education[]) => Promise<void>; // Handler for education list update
-  saveAchievements: (achievements: Achievement[]) => Promise<void>; // Handler for achievements list update
-  refetch: () => void;                         // Function to manually trigger a data reload
+  data: ProfileData | null;
+  loading: boolean;
+  saving: boolean;
+  error: string | null;
+  saveBasic: (draft: BasicDetails) => Promise<void>;
+  saveCollaboration: (draft: Collaboration) => Promise<void>;
+  saveSkills: (skills: Skill[]) => Promise<void>;
+  saveProject: (draft: Project) => Promise<void>; // Updated to handle a single project
+  saveExperiences: (experiences: Experience[]) => Promise<void>;
+  saveEducations: (educations: Education[]) => Promise<void>;
+  saveAchievements: (achievements: Achievement[]) => Promise<void>;
+  refetch: () => void;
 }
 
-/** 
- * useProfile Hook
- * The central logic orchestrator for the profile feature.
- */
 const useProfile = (): UseProfileReturn => {
-  // Holds the main profile data object
   const [data, setData] = useState<ProfileData | null>(null);
-  
-  // Controls the "Skeleton" loading state on initial page entry
-  const [loading, setLoading] = useState(true);
-  
-  // Controls the "Loading..." spinner state on Save buttons
+  const[loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
-  // Global error state for the profile page
   const [error, setError] = useState<string | null>(null);
-
-  /** 
-   * hasInitialized Ref
-   * IMPORTANT: Prevents React 18 Strict Mode from calling the API twice on mount.
-   * Unlike State, updating a Ref does not trigger a re-render or dependency loop.
-   */
   const hasInitialized = useRef(false);
 
-  /** 
-   * loadProfile Function
-   * Wrapped in useCallback so it can be passed to useEffect safely without changing on every render.
-   */
   const loadProfile = useCallback(async () => {
-    // 1. Set UI to loading state
-    setLoading(true);
-    
-    // 2. Clear any previous error messages
-    setError(null);
-    
+    setLoading(true); setError(null);
     try {
-      // 3. Call the API service to fetch data from Express backend
       const result = await fetchProfile();
-      
-      // 4. On success, store the data in state
       setData(result);
     } catch (err) {
-      // 5. On failure, extract the error message for the user
       setError(err instanceof Error ? err.message : 'Failed to load profile');
-    } finally {
-      // 6. Whether success or failure, stop the loading animation
-      setLoading(false);
-    }
-  }, []); // Empty dependency array means this function is created only once
+    } finally { setLoading(false); }
+  },[]);
 
-  /**
-   * Initial Mount Effect
-   * Runs once when the page is first loaded.
-   */
   useEffect(() => {
-    // Check the ref to see if we already started the fetch
     if (!hasInitialized.current) {
-      // Mark as initialized
       hasInitialized.current = true;
-      
-      // Trigger the fetch
       loadProfile();
     }
-  }, [loadProfile]); // Depends on loadProfile function
+  },[loadProfile]);
 
-  /** 
-   * saveBasic Handler
-   * Synchronizes Basic Details (Name, Bio, etc.) with the server.
-   */
   const saveBasic = async (draft: BasicDetails) => {
-    setSaving(true); setError(null); // Enter "Saving" state
+    setSaving(true); setError(null);
     try {
-      const updated = await updateBasicDetails(draft); // Wait for API
-      // Update local state: Replace old basicDetails with the new one from server
+      const updated = await updateBasicDetails(draft);
       setData(prev => prev ? { ...prev, basicDetails: updated } : prev);
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } 
-    finally { setSaving(false); } // Exit "Saving" state
+    finally { setSaving(false); }
   };
 
-  /** 
-   * saveCollaboration Handler
-   */
   const saveCollaboration = async (draft: Collaboration) => {
     setSaving(true); setError(null);
     try {
@@ -133,74 +67,76 @@ const useProfile = (): UseProfileReturn => {
     finally { setSaving(false); }
   };
 
-  /** 
-   * saveSkills Handler
-   */
   const saveSkills = async (skills: Skill[]) => {
     setSaving(true); setError(null);
     try {
-      // Send entire array to backend; cast as any to handle complex serialization if needed
-      const updated = (await updateSkills(skills as any)) as unknown as Skill[];
+      const updated = await updateSkills(skills);
       setData(prev => prev ? { ...prev, skills: updated } : prev);
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } 
     finally { setSaving(false); }
   };
 
-  /** 
-   * saveProjects Handler
+  /**
+   * @description saveProject Handler
+   * Evaluates if a project is new (POST) or existing (PUT) based on the ID.
+   * Modifies the local state array seamlessly without re-fetching all profile data.
    */
-  const saveProjects = async (projects: Project[]) => {
+  const saveProject = async (draft: Project) => {
     setSaving(true); setError(null);
     try {
-      const updated = (await updateProjects(projects as any)) as unknown as Project[];
-      setData(prev => prev ? { ...prev, projects: updated } : prev);
-    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } 
-    finally { setSaving(false); }
+      const isNew = !data?.projects?.some(p => p.id === draft.id);
+      const savedProject = await saveProjectEntry(draft, isNew);
+      
+      setData(prev => {
+        if (!prev) return prev;
+        const items = prev.projects || [];
+        const updated = isNew 
+          ?[...items, savedProject] // Add the new DB-persisted project
+          : items.map(i => i.id === draft.id ? savedProject : i); // Update existing
+        
+        return { ...prev, projects: updated };
+      });
+    } catch (err) { 
+      setError(err instanceof Error ? err.message : 'Failed to save project');
+      throw err; // Rethrow to prevent closing modal if API fails
+    } finally { 
+      setSaving(false); 
+    }
   };
 
-  /** 
-   * saveExperiences Handler
-   */
+  // Remaining array upsert functions (assuming mock behaviors for now)
   const saveExperiences = async (experiences: Experience[]) => {
     setSaving(true); setError(null);
     try {
-      const updated = (await updateExperiences(experiences as any)) as unknown as Experience[];
+      const updated = await updateExperiences(experiences);
       setData(prev => prev ? { ...prev, experiences: updated } : prev);
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } 
     finally { setSaving(false); }
   };
 
-  /** 
-   * saveEducations Handler
-   */
   const saveEducations = async (educations: Education[]) => {
     setSaving(true); setError(null);
     try {
-      const updated = (await updateEducations(educations as any)) as unknown as Education[];
+      const updated = await updateEducations(educations);
       setData(prev => prev ? { ...prev, educations: updated } : prev);
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } 
     finally { setSaving(false); }
   };
 
-  /** 
-   * saveAchievements Handler
-   */
   const saveAchievements = async (achievements: Achievement[]) => {
     setSaving(true); setError(null);
     try {
-      const updated = (await updateAchievements(achievements as any)) as unknown as Achievement[];
+      const updated = await updateAchievements(achievements);
       setData(prev => prev ? { ...prev, achievements: updated } : prev);
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } 
     finally { setSaving(false); }
   };
 
-  // Return the entire state and all handler functions to the Profile component
   return {
     data, loading, saving, error,
-    saveBasic, saveCollaboration, saveSkills, saveProjects, saveExperiences, 
-    saveEducations, saveAchievements, refetch: loadProfile,
+    saveBasic, saveCollaboration, saveSkills, saveProject, 
+    saveExperiences, saveEducations, saveAchievements, refetch: loadProfile,
   };
 };
 
-// Export the hook as the default export
 export default useProfile;
