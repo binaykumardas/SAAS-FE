@@ -2,10 +2,10 @@
  * @file Signup.tsx
  * @description 
  * Comprehensive User Registration Page with:
- * 1. "Touch & Leave" (onBlur) Validation.
- * 2. Synchronous Submit Guard (Prevents navigation on error).
- * 3. Dynamic UI Feedback (Red borders and messages).
- * 4. Regex-based Email & Password matching logic.
+ * 1. "Touch & Leave" (onBlur) Validation for First and Last names.
+ * 2. Split Name fields (First/Last) for better data granularity.
+ * 3. Synchronous Submit Guard (Prevents navigation on error).
+ * 4. Dynamic UI Feedback (Red borders and messages).
  */
 
 import axios from 'axios';
@@ -19,8 +19,10 @@ const Signup = () => {
 
   // ─────────────────────────────────────────────────────────────
   // 1. FORM FIELD STATES
+  // Split 'name' into 'firstName' and 'lastName'
   // ─────────────────────────────────────────────────────────────
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -28,53 +30,48 @@ const Signup = () => {
 
   // ─────────────────────────────────────────────────────────────
   // 2. INTERACTION & UI STATES
-  // touched: Keeps track of which fields the user has focused and then left.
-  // loading: Prevents multiple submissions while the "API" is working.
   // ─────────────────────────────────────────────────────────────
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
 
-    /**
-     * CORE VALIDATION ENGINE
-     * This function contains the business rules for every field.
-     * @param field - The name of the input field.
-     * @param force - If true, ignores the "touched" check (used during form submission).
-     */
+  /**
+   * CORE VALIDATION ENGINE
+   * Checks business rules for each field.
+   * Updated to handle firstName and lastName separately.
+   */
   const getFieldError = (field: string, force = false): string => {
-    // We only show errors if the field was "blurred" (touched) OR if we are forcing a check on submit.
     if (!touched[field] && !force) return '';
 
-    // Validation for Full Name
-    if (field === 'name' && !name.trim()) return 'This field is required';
+    // Validation for First Name
+    if (field === 'firstName' && !firstName.trim()) return 'First name is required';
     
-    // Validation for Email
+    // Validation for Last Name
+    if (field === 'lastName' && !lastName.trim()) return 'Last name is required';
+    
     if (field === 'email') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email.trim()) return 'This field is required';
+      if (!email.trim()) return 'Email is required';
       if (!emailRegex.test(email)) return 'Please enter a valid email address';
     }
 
-    // Validation for Password
     if (field === 'password') {
-      if (!password) return 'This field is required';
-      if (password.length < 8) return 'Password must be at least 8 characters';
+      if (!password) return 'Password is required';
+      if (password.length < 8) return 'Must be at least 8 characters';
     }
 
-    // Validation for Password Confirmation
     if (field === 'confirm') {
-      if (!confirm) return 'This field is required';
+      if (!confirm) return 'Confirmation is required';
       if (confirm !== password) return 'Passwords do not match';
     }
 
-    // Validation for Dropdown
-    if (field === 'engineerType' && !engineerType) return 'This field is required';
+    if (field === 'engineerType' && !engineerType) return 'Selection is required';
 
     return '';
   };
 
   /**
    * HANDLE BLUR
-   * Marks a field as "touched" when the user clicks away from it.
+   * Marks a field as "touched" when the user clicks away.
    */
   const handleBlur = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -82,7 +79,7 @@ const Signup = () => {
 
   /**
    * DYNAMIC CLASS GENERATOR
-   * Returns red border classes if the validator finds an error for the field.
+   * Returns red border/ring classes if an error is found.
    */
   const getInputClass = (fieldName: string) => {
     const error = getFieldError(fieldName);
@@ -90,46 +87,55 @@ const Signup = () => {
       auth-input w-full px-3.5 py-2.5 rounded-lg text-sm
       bg-raised border transition-all duration-150 outline-none
       ${error 
-        ? 'border-danger focus:border-danger ring-1 ring-danger' // Error State: Red
-        : 'border-border focus:border-accent ring-0'}          // Normal State: Gray/Blue
+        ? 'border-danger focus:border-danger ring-1 ring-danger' 
+        : 'border-border focus:border-accent ring-0'}
     `;
   };
 
   /**
    * SUBMIT HANDLER
-   * Performs a "Hard Validation" check. If even one field is invalid, 
-   * it stops the navigation and shows all errors.
+   * Checks all fields synchronously. Construct payload with split name data.
    */
   const handleSubmit = async(e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Stop page reload
+    e.preventDefault();
 
-    // Step 1: Immediately show all errors visually by marking everything as touched
-    setTouched({ name: true, email: true, password: true, confirm: true, engineerType: true });
+    // Mark all fields as touched to show all existing errors
+    setTouched({ 
+      firstName: true, 
+      lastName: true, 
+      email: true, 
+      password: true, 
+      confirm: true, 
+      engineerType: true 
+    });
 
-    // Step 2: Perform a "Force" validation check on all fields
-    const fields = ['name', 'email', 'password', 'confirm', 'engineerType'];
-    
-    // Check if any field has an error message
+    // Synchronous error check
+    const fields = ['firstName', 'lastName', 'email', 'password', 'confirm', 'engineerType'];
     const hasAnyError = fields.some(field => getFieldError(field, true) !== '');
 
-    // Step 3: BLOCKER - If there are errors, stop right here!
-    if (hasAnyError) {
-      return; 
-    }
+    if (hasAnyError) return; 
 
-    // Step 4: Proceed only if form is 100% valid
     setLoading(true);
+
+    // MODIFIED: Payload now includes separate name fields
     const PAYLOAD = {
-      fullName: name,
-      email: email,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim(),
       password: password,
       confirmPassword: confirm,
       role: engineerType
     };
-    const response = await axios.post(BASE_URL + API + API_VERSION + `/auth/signup`,PAYLOAD);
-    if(Util.isValidObject(response)) {
+
+    try {
+      const response = await axios.post(BASE_URL + API + API_VERSION + `/auth/signup`, PAYLOAD);
+      if(Util.isValidObject(response)) {
+        setLoading(false);
+        navigate('/login'); 
+      }
+    } catch (err) {
       setLoading(false);
-      navigate('/login'); // Move to next page
+      console.error("Signup failed", err);
     }
   };
 
@@ -137,30 +143,45 @@ const Signup = () => {
     <div className="min-h-screen bg-bg flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         
-        {/* Header Section */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-text">Create your account</h1>
           <p className="mt-2 text-sm text-secondary">Join thousands of builders today</p>
         </div>
 
-        {/* Signup Card */}
         <div className="bg-surface border border-border rounded-2xl p-8 shadow-card">
           <form onSubmit={handleSubmit} noValidate>
             
-            {/* FULL NAME */}
-            <div className="mb-5">
-              <label className="block text-sm font-medium text-text mb-1.5">
-                Full name <span className="text-danger">*</span>
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onBlur={() => handleBlur('name')} // Trigger validation on leave
-                placeholder="Enter your full name"
-                className={getInputClass('name')}
-              />
-              {getFieldError('name') && <p className="mt-1.5 text-xs text-danger">{getFieldError('name')}</p>}
+            {/* NAME SECTION - Grid layout for First/Last Name */}
+            <div className="grid grid-cols-2 gap-4 mb-5">
+              <div>
+                <label className="block text-sm font-medium text-text mb-1.5">
+                  First name <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  onBlur={() => handleBlur('firstName')}
+                  placeholder="First name"
+                  className={getInputClass('firstName')}
+                />
+                {getFieldError('firstName') && <p className="mt-1.5 text-xs text-danger">{getFieldError('firstName')}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text mb-1.5">
+                  Last name <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  onBlur={() => handleBlur('lastName')}
+                  placeholder="Last name"
+                  className={getInputClass('lastName')}
+                />
+                {getFieldError('lastName') && <p className="mt-1.5 text-xs text-danger">{getFieldError('lastName')}</p>}
+              </div>
             </div>
 
             {/* EMAIL */}
@@ -230,7 +251,6 @@ const Signup = () => {
               {getFieldError('engineerType') && <p className="mt-1.5 text-xs text-danger">{getFieldError('engineerType')}</p>}
             </div>
 
-            {/* SUBMIT BUTTON */}
             <button
               type="submit"
               disabled={loading}
@@ -243,7 +263,6 @@ const Signup = () => {
 
           </form>
 
-          {/* Footer Link */}
           <p className="text-center text-sm text-secondary mt-6">
             Already have an account?{' '}
             <Link to="/login" className="font-semibold text-accent hover:underline">
