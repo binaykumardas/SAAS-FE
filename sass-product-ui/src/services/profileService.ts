@@ -133,19 +133,33 @@ export const updateCollaboration = async (
 };
 
 export const updateSkills = async (
-  data: Skill,
-): Promise<Skill> => {
+  data: Skill[],
+): Promise<Skill[]> => {
   await delay(400);
-  // ─── Swap this block for real API call ───
-  // const res = await fetch('/api/profile/skills', {
-  //   method:  'PATCH',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body:    JSON.stringify(data),
-  // });
-  // if (!res.ok) throw new Error('Failed to update skills');
-  // return res.json();
-  // ─────────────────────────────────────────
-  return data;
+  /**
+   * 2. DYNAMIC PAYLOAD CREATION
+   * We wrap the incoming array into a "skills" key.
+   * We use .map() to ensure that even if the UI object has extra fields (like 'id'),
+   * we only send what the backend expects.
+   */
+  const PAYLOAD = {
+    skills: data.map((skill) => ({
+      name: skill.name,
+      category: skill.category,
+      proficiency: skill.level 
+    }))
+  };
+
+  try {
+    const response = await axios.put(BASE_URL + API + API_VERSION + `/profile/${profileID}/skills`,PAYLOAD);
+    if(Util.isValidObject(response) && Util.isValidObject(response.data) && Util.isValidObject(response.data.data)) {
+      return response.data.data.skills as Skill[];
+    }
+    throw new Error("Server updated successfully, but no data was returned.");
+  } catch(e:any) {
+      const errorMessage = e.response?.data?.message || e.message || 'Failed to update skills';
+      throw new Error(errorMessage);
+  }
 }
 
 export const updateProjects = async (

@@ -17,6 +17,7 @@ export interface Skill {
   name: string;
   level: SkillLevel;
   category: string;
+  proficiency?: string;
 }
 
 export interface Project {

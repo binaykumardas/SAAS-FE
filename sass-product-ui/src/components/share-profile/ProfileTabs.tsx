@@ -10,6 +10,7 @@ import {
 import type {
   BasicDetails, Skill, Project, Experience,
   Education, Collaboration, Achievement,
+  SkillLevel,
 } from '../../shared/model/profile';
 
 /** 
@@ -55,38 +56,88 @@ export const BasicTab = ({
   </SectionCard>
 );
 
-/** 
- * Tab 2: Skills
+/**
+ * @file ProfileTabs.tsx - SkillsTab Component
+ * @description Displays user skills grouped by category.
+ * Handles strict TypeScript type casting from API 'proficiency' to UI 'level'.
  */
+
 export const SkillsTab = ({
   skills, onEdit,
 }: {
-  skills: Skill[]; onEdit: () => void;
+  skills: Skill[]; // Kept as strict Skill array
+  onEdit: () => void;
 }) => {
-  // BUG FIX: Wrapped in optional check to prevent crash if skills is undefined
+  
+  /**
+   * 1. GROUPING & TYPE-SAFE MAPPING
+   * We reduce the array into a record where keys are categories.
+   * We "Force Cast" the level to SkillLevel to satisfy TypeScript.
+   */
   const byCategory = (skills || []).reduce<Record<string, Skill[]>>((acc, s) => {
-    if (s && s.category) {
-        if (!acc[s.category]) acc[s.category] = [];
-        acc[s.category].push(s);
-    }
+    // Ensure category exists or default to 'General'
+    const category = s.category || 'General';
+    
+    if (!acc[category]) acc[category] = [];
+
+    // Construct a type-safe Skill object
+    const mappedSkill: Skill = {
+      ...s,
+      /**
+       * BUG FIX: Type Assignment
+       * 1. We take 'proficiency' (from API) or 'level' (existing).
+       * 2. We provide a fallback ('Beginner') so it's never an empty string.
+       * 3. We use 'as SkillLevel' to tell TypeScript we guarantee this string 
+       *    matches the expected union type.
+       */
+      level: (s.proficiency || s.level || 'Beginner') as SkillLevel
+    };
+
+    acc[category].push(mappedSkill);
     return acc;
   }, {});
 
+  // 2. EMPTY STATE GUARD
   if (!skills || skills.length === 0) {
-    return <EmptyState icon="🛠️" title="No skills added" description="List your technical stack to stand out." actionLabel="+ Add Skills" onAction={onEdit} />;
+    return (
+      <EmptyState 
+        icon="🛠️" 
+        title="No skills added" 
+        description="List your technical stack to stand out." 
+        actionLabel="+ Add Skills" 
+        onAction={onEdit} 
+      />
+    );
   }
 
   return (
     <SectionCard title="Skills & Technologies" onEdit={onEdit}>
       <div className="flex flex-col gap-5">
+        {/* Iterate through the grouped categories */}
         {Object.entries(byCategory).map(([category, catSkills]) => (
           <div key={category}>
-            <p className="text-xs font-bold uppercase tracking-wider text-muted mb-2">{category}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted mb-2">
+              {category}
+            </p>
             <div className="flex flex-wrap gap-2">
-              {catSkills.map(s => <SkillChip key={s.id} name={s?.name || ''} level={s?.level || ''} />)}
+              {catSkills.map((s) => (
+                <SkillChip 
+                  key={s.id || s.name} 
+                  name={s.name} 
+                  level={s.level} // Now guaranteed to be SkillLevel
+                />
+              ))}
             </div>
           </div>
         ))}
+      </div>
+
+      {/* FOOTER LEGEND */}
+      <div className="mt-4 pt-4 border-t border-border flex items-center gap-4">
+        <span className="text-xs text-muted">Legend:</span>
+        <span className="text-xs text-secondary"><span className="font-bold text-accent">E</span> = Expert</span>
+        <span className="text-xs text-secondary"><span className="font-bold">I</span> = Intermediate</span>
+        <span className="text-xs text-secondary"><span className="font-bold">B</span> = Beginner</span>
       </div>
     </SectionCard>
   );
