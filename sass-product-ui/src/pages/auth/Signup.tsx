@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * @file Signup.tsx
  * @description 
@@ -13,6 +14,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API, API_VERSION, BASE_URL } from '../../shared/constant/const';
 import Util from '../../shared/utils/utils';
+import skillList from '../../assets/json/skills.json'
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -244,9 +246,11 @@ const Signup = () => {
                 className={getInputClass('engineerType')}
               >
                 <option value="" disabled>Select an option</option>
-                <option value="1">Frontend Developer</option>
-                <option value="2">Backend Developer</option>
-                <option value="3">Full Stack Developer</option>
+                {skillList.map((skill: any) => (
+                  <option key={skill.id} value={skill.value}>
+                    {skill.label}
+                  </option>
+                ))}
               </select>
               {getFieldError('engineerType') && <p className="mt-1.5 text-xs text-danger">{getFieldError('engineerType')}</p>}
             </div>

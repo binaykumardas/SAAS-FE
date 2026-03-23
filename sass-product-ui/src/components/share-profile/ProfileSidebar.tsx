@@ -1,6 +1,7 @@
 // src/components/share-profile/ProfileSidebar.tsx
 import { InfoRow } from './ProfileUI';
 import type { BasicDetails } from '../../shared/model/profile';
+import skillList from '../../assets/json/skills.json'
 
 interface ProfileSidebarProps {
   basic?:      BasicDetails; 
@@ -8,10 +9,13 @@ interface ProfileSidebarProps {
   formatLabel: (v: string) => string;
 }
 
-const ProfileSidebar = ({ basic, formatDate, formatLabel }: ProfileSidebarProps) => {
+const ProfileSidebar = ({ basic, formatDate }: ProfileSidebarProps) => {
   const displayName = basic?.firstName || basic?.lastName 
     ? `${basic.firstName ?? ''} ${basic.lastName ?? ''}`.trim()
     : 'New User';
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const developer = skillList.find((item:any) => item.value === basic?.devType);
 
   return (
     <div className="lg:col-span-1 flex flex-col gap-4">
@@ -30,7 +34,7 @@ const ProfileSidebar = ({ basic, formatDate, formatLabel }: ProfileSidebarProps)
         <div className="text-center mb-4">
           <h2 className="text-lg font-bold tracking-tight text-text">{displayName}</h2>
           <span className="inline-block mt-1.5 text-xs font-bold uppercase tracking-wider bg-accent-tint text-accent px-3 py-1 rounded-full">
-            {formatLabel(basic?.devType || 'Developer')}
+            {developer?.label}
           </span>
         </div>
 

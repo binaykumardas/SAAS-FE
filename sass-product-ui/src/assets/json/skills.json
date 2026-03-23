@@ -1,0 +1,42 @@
+[
+    {
+        "id": 1,
+        "value": 1,
+        "label": "Frontend Developer"
+    },
+    {
+        "id": 2,
+        "value": 2,
+        "label": "Backend Developer"
+    },
+    {
+        "id": 3,
+        "value": 3,
+        "label": "Full Stack Developer"
+    },
+    {
+        "id": 4,
+        "value": 4,
+        "label": "QA Engineer"
+    },
+    {
+        "id": 5,
+        "value": 5,
+        "label": "Devops"
+    },
+    {
+        "id": 6,
+        "value": 6,
+        "label": "Data Analyst"
+    },
+    {
+        "id": 7,
+        "value": 7,
+        "label": "Data Engineer"
+    },
+    {
+        "id": 8,
+        "value": 8,
+        "label": "AI Engineer"
+    }
+]

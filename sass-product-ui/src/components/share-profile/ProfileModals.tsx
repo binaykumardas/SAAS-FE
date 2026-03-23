@@ -8,26 +8,91 @@ import type {
   Project, Experience, Education, Achievement 
 } from '../../shared/model/profile';
 import { SKILL_CATEGORIES } from '../../shared/constant/categories';
+import skillList from '../../assets/json/skills.json';
+import genderList from '../../assets/json/gender.json'
+
 
 // ─────────────────────────────────────────────────────────────
 // COMPONENT 1 — BasicModal
 // ─────────────────────────────────────────────────────────────
 export const BasicModal = ({
-  isOpen, onClose, onSave, saving = false, draft, setDraft,
+  isOpen,
+  onClose,
+  onSave,
+  saving = false,
+  draft,
+  setDraft,
 }: {
-  isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
-  draft: BasicDetails; setDraft: React.Dispatch<React.SetStateAction<BasicDetails | null>>;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  saving?: boolean;
+  draft: BasicDetails;
+  setDraft: React.Dispatch<React.SetStateAction<BasicDetails | null>>;
 }) => (
-  <EditModal title="Edit your basic details information." isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
+  <EditModal
+    title="Edit your basic details information."
+    isOpen={isOpen}
+    onClose={onClose}
+    onSave={onSave}
+    saving={saving}
+  >
     <div className="grid grid-cols-2 gap-4">
-      <FormInput label="First Name" value={draft.firstName} placeholder="First name" onChange={v => setDraft(d => d ? { ...d, firstName: v } : d)} />
-      <FormInput label="Last Name" value={draft.lastName} placeholder="Last name" onChange={v => setDraft(d => d ? { ...d, lastName: v } : d)} />
-      <FormInput label="Phone Number" type="tel" value={draft.mobile} placeholder="Phone number" onChange={v => setDraft(d => d ? { ...d, mobile: v } : d)} />
-      <FormSelect label="Dev Type" value={draft.devType} onChange={v => setDraft(d => d ? { ...d, devType: v } : d)} options={[{ label: 'Frontend Developer', value: 'FRONTEND_DEVELOPER' }, { label: 'Backend Developer', value: 'BACKEND_DEVELOPER' }, { label: 'Full Stack Developer', value: 'FULL_STACK_DEVELOPER' }]} />
-      <FormInput label="Date of Birth" type="date" value={draft.dateOfBirth} onChange={v => setDraft(d => d ? { ...d, dateOfBirth: v } : d)} />
-      <FormSelect label="Gender" value={draft.gender} onChange={v => setDraft(d => d ? { ...d, gender: v } : d)} options={[{ label: 'Male', value: 'MALE' }, { label: 'Female', value: 'FEMALE' }, { label: 'Other', value: 'OTHER' }]} />
-      <div className="col-span-2"><FormInput label="Email Address" type="email" value={draft.email} placeholder="email@example.com" onChange={v => setDraft(d => d ? { ...d, email: v } : d)} /></div>
-      <div className="col-span-2"><FormTextarea label="About Me" value={draft.aboutMe} rows={3} placeholder="Tell us about yourself..." onChange={v => setDraft(d => d ? { ...d, aboutMe: v } : d)} /></div>
+      <FormInput
+        label="First Name"
+        value={draft.firstName}
+        placeholder="First name"
+        onChange={(v) => setDraft((d) => (d ? { ...d, firstName: v } : d))}
+      />
+      <FormInput
+        label="Last Name"
+        value={draft.lastName}
+        placeholder="Last name"
+        onChange={(v) => setDraft((d) => (d ? { ...d, lastName: v } : d))}
+      />
+      <FormInput
+        label="Phone Number"
+        type="tel"
+        value={draft.mobile}
+        placeholder="Phone number"
+        onChange={(v) => setDraft((d) => (d ? { ...d, mobile: v } : d))}
+      />
+      <FormSelect
+        label="Dev Type"
+        value={draft.devType}
+        onChange={(v) => setDraft((d) => (d ? { ...d, devType: v } : d))}
+        options={skillList}
+      />
+      <FormInput
+        label="Date of Birth"
+        type="date"
+        value={draft.dateOfBirth}
+        onChange={(v) => setDraft((d) => (d ? { ...d, dateOfBirth: v } : d))}
+      />
+      <FormSelect
+        label="Gender"
+        value={draft.gender}
+        onChange={(v) => setDraft((d) => (d ? { ...d, gender: v } : d))}
+        options={genderList}
+      />
+      <div className="col-span-2">
+        <FormInput
+          label="Email Address"
+          type="email"
+          value={draft.email}
+          placeholder="email@example.com"
+          onChange={(v) => setDraft((d) => (d ? { ...d, email: v } : d))}
+        />
+      </div>
+      <div className="col-span-2">
+        <FormTextarea
+          label="About Me"
+          value={draft.aboutMe}
+          rows={3}
+          placeholder="Tell us about yourself..."
+          onChange={(v) => setDraft((d) => (d ? { ...d, aboutMe: v } : d))}
+        />
+      </div>
     </div>
   </EditModal>
 );
@@ -69,8 +134,8 @@ export const CollaborateModal = ({
           }} 
         />
         
-        <FormSelect label="Availability" value={draft.availability} onChange={v => setDraft(d => d ? { ...d, availability: v } : d)} options={[{ label: 'Full-time', value: 'Full-time' }, { label: 'Part-time', value: 'Part-time' }, { label: 'Weekends', value: 'Weekends' }, { label: 'Flexible', value: 'Flexible' }]} />
-        <FormSelect label="Work Style" value={draft.workStyle} onChange={v => setDraft(d => d ? { ...d, workStyle: v } : d)} options={[{ label: 'Remote', value: 'Remote' }, { label: 'Hybrid', value: 'Hybrid' }, { label: 'In-person', value: 'In-person' }]} />
+        <FormSelect label="Availability" value={draft.availability} onChange={v => setDraft(d => d ? { ...d, availability: v } : d)} options={[{ id: 1,label: 'Full-time', value: 'Full-time' }, { id:2,label: 'Part-time', value: 'Part-time' }, { id:3,label: 'Weekends', value: 'Weekends' }, { id:4,label: 'Flexible', value: 'Flexible' }]} />
+        <FormSelect label="Work Style" value={draft.workStyle} onChange={v => setDraft(d => d ? { ...d, workStyle: v } : d)} options={[{ id:1,label: 'Remote', value: 'Remote' }, { id:2,label: 'Hybrid', value: 'Hybrid' }, { id:3,label: 'In-person', value: 'In-person' }]} />
         <FormInput label="Time Zone" value={draft.timezone} placeholder="e.g. IST (UTC+5:30)" onChange={v => setDraft(d => d ? { ...d, timezone: v } : d)} />
       </div>
     </EditModal>
@@ -91,9 +156,9 @@ export const SkillsModal = ({
   const [level, setLevel] = useState<SkillLevel>('Intermediate');
   
   const LEVELS =[
-    { label: 'Expert', value: 'Expert' }, 
-    { label: 'Intermediate', value: 'Intermediate' }, 
-    { label: 'Beginner', value: 'Beginner' },
+    { id:1,label: 'Expert', value: 'Expert' }, 
+    { id:2,label: 'Intermediate', value: 'Intermediate' }, 
+    { id:3,label: 'Beginner', value: 'Beginner' },
   ];
 
   const handleAddSkill = () => {
@@ -173,8 +238,8 @@ export const ProjectsModal = ({
             }} 
           />
         </div>
-        <FormSelect label="Role" value={draft.role} onChange={v => setDraft(d => d ? { ...d, role: v as Project['role'] } : d)} options={[{ label: 'Solo', value: 'Solo' }, { label: 'Lead', value: 'Lead' }, { label: 'Contributor', value: 'Contributor' }]} />
-        <FormSelect label="Status" value={draft.status} onChange={v => setDraft(d => d ? { ...d, status: v as Project['status'] } : d)} options={[{ label: 'In Progress', value: 'In Progress' }, { label: 'Live', value: 'Live' }, { label: 'Archived', value: 'Archived' }]} />
+        <FormSelect label="Role" value={draft.role} onChange={v => setDraft(d => d ? { ...d, role: v as Project['role'] } : d)} options={[{ id:1,label: 'Solo', value: 'Solo' }, { id:2,label: 'Lead', value: 'Lead' }, { id:3,label: 'Contributor', value: 'Contributor' }]} />
+        <FormSelect label="Status" value={draft.status} onChange={v => setDraft(d => d ? { ...d, status: v as Project['status'] } : d)} options={[{ id:1,label: 'In Progress', value: 'In Progress' }, { id:2,label: 'Live', value: 'Live' }, { id:3,label: 'Archived', value: 'Archived' }]} />
         <FormInput label="GitHub URL" value={draft.githubUrl || ''} onChange={v => setDraft(d => d ? { ...d, githubUrl: v } : d)} />
         <FormInput label="Live URL" value={draft.liveUrl || ''} onChange={v => setDraft(d => d ? { ...d, liveUrl: v } : d)} />
       </div>
@@ -195,7 +260,7 @@ export const ExperienceModal = ({
     <div className="grid grid-cols-2 gap-4">
       <FormInput label="Company Name" value={draft.company} placeholder="e.g. TechCorp" onChange={v => setDraft(d => d ? { ...d, company: v } : d)} />
       <FormInput label="Job Title / Role" value={draft.role} placeholder="e.g. Frontend Developer" onChange={v => setDraft(d => d ? { ...d, role: v } : d)} />
-      <div className="col-span-2"><FormSelect label="Employment Type" value={draft.type} onChange={v => setDraft(d => d ? { ...d, type: v } : d)} options={[{ label: 'Full-time', value: 'Full-time' }, { label: 'Part-time', value: 'Part-time' }, { label: 'Internship', value: 'Internship' }, { label: 'Freelance', value: 'Freelance' }]} /></div>
+      <div className="col-span-2"><FormSelect label="Employment Type" value={draft.type} onChange={v => setDraft(d => d ? { ...d, type: v } : d)} options={[{ id:1,label: 'Full-time', value: 'Full-time' }, { id:2,label: 'Part-time', value: 'Part-time' }, { id:3,label: 'Internship', value: 'Internship' }, { id:4,label: 'Freelance', value: 'Freelance' }]} /></div>
       <FormInput label="Start Date" value={draft.startDate} placeholder="Jan 2023" onChange={v => setDraft(d => d ? { ...d, startDate: v } : d)} />
       <FormInput label="End Date" value={draft.endDate} placeholder="Present" onChange={v => setDraft(d => d ? { ...d, endDate: v } : d)} />
       <div className="col-span-2"><FormTextarea label="Description" value={draft.description} rows={3} onChange={v => setDraft(d => d ? { ...d, description: v } : d)} /></div>
@@ -216,7 +281,7 @@ export const EducationModal = ({
     <div className="grid grid-cols-2 gap-4">
       <div className="col-span-2"><FormInput label="Institution" value={draft.institution} onChange={v => setDraft(d => d ? { ...d, institution: v } : d)} /></div>
       <FormInput label="Degree" value={draft.degree} onChange={v => setDraft(d => d ? { ...d, degree: v } : d)} />
-      <FormSelect label="Type" value={draft.type} onChange={v => setDraft(d => d ? { ...d, type: v } : d)} options={[{ label: 'Degree', value: 'Degree' }, { label: 'Certification', value: 'Certification' }, { label: 'Bootcamp', value: 'Bootcamp' }]} />
+      <FormSelect label="Type" value={draft.type} onChange={v => setDraft(d => d ? { ...d, type: v } : d)} options={[{ id:1,label: 'Degree', value: 'Degree' }, { id:2,label: 'Certification', value: 'Certification' }, { id:3,label: 'Bootcamp', value: 'Bootcamp' }]} />
       <FormInput label="Start Year" value={draft.startYear} onChange={v => setDraft(d => d ? { ...d, startYear: v } : d)} />
       <FormInput label="End Year" value={draft.endYear} onChange={v => setDraft(d => d ? { ...d, endYear: v } : d)} />
       <div className="col-span-2"><FormInput label="Link" value={draft.link || ''} onChange={v => setDraft(d => d ? { ...d, link: v } : d)} /></div>
@@ -236,7 +301,7 @@ export const AchievementsModal = ({
   <EditModal title={draft.title ? "Edit Achievement" : "Add Achievement"} isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
     <div className="grid grid-cols-2 gap-4">
       <div className="col-span-2"><FormInput label="Title" value={draft.title} onChange={v => setDraft(d => d ? { ...d, title: v } : d)} /></div>
-      <FormSelect label="Type" value={draft.type} onChange={v => setDraft(d => d ? { ...d, type: v } : d)} options={[{ label: 'Hackathon', value: 'Hackathon' }, { label: 'Award', value: 'Award' }, { label: 'Publication', value: 'Publication' }]} />
+      <FormSelect label="Type" value={draft.type} onChange={v => setDraft(d => d ? { ...d, type: v } : d)} options={[{ id:1,label: 'Hackathon', value: 'Hackathon' }, { id:2,label: 'Award', value: 'Award' }, { id:3,label: 'Publication', value: 'Publication' }]} />
       <FormInput label="Date" value={draft.date} onChange={v => setDraft(d => d ? { ...d, date: v } : d)} />
       <div className="col-span-2"><FormTextarea label="Description" value={draft.description} rows={3} onChange={v => setDraft(d => d ? { ...d, description: v } : d)} /></div>
       <div className="col-span-2"><FormInput label="Link" value={draft.link || ''} onChange={v => setDraft(d => d ? { ...d, link: v } : d)} /></div>
