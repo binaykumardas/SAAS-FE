@@ -1,7 +1,14 @@
 // src/components/share-profile/ProfileTabs.tsx
 import { DetailField, SectionCard, SkillChip, Tag, StatusBadge, EmptyState, ListHeader } from './ProfileUI';
 import type { BasicDetails, Skill, Project, Experience, Education, Collaboration, Achievement, SkillLevel } from '../../shared/model/profile';
+import skillList from '../../assets/json/skills.json'
 
+
+const Developer = (data: number | string) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const developerType = skillList.find((item: any) => item.value === data);
+  return developerType?.label || '—';
+};
 const EditIconButton = ({ onClick }: { onClick: () => void }) => (
   <button onClick={(e) => { e.stopPropagation(); onClick(); }} className="text-muted hover:text-accent p-1 transition-colors" title="Edit" aria-label="Edit item">
     <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -17,7 +24,7 @@ export const BasicTab = ({ basic, formatDate, formatLabel, onEdit }: { basic: Ba
       <DetailField label="Last Name" value={basic?.lastName || '—'} />
       <DetailField label="Mobile" value={basic?.mobile || '—'} />
       <DetailField label="Gender" value={formatLabel(basic?.gender || '')} />
-      <DetailField label="Dev Type" value={formatLabel(basic?.devType || '')} />
+      <DetailField label="Dev Type" value={Developer(basic?.devType)} />
       <DetailField label="Date of Birth" value={formatDate(basic?.dateOfBirth || '')} />
     </div>
     <div className="mt-5 pt-5 border-t border-border">

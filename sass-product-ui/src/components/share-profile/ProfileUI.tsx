@@ -19,13 +19,14 @@ export const FormInput = ({ label, type = 'text', value, onChange, placeholder }
   );
 };
 
-export const FormSelect = ({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { label: string; value: string }[]; }) => {
+export const FormSelect = ({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { id:number; label: string; value: number | string }[]; }) => {
   const id = useId();
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="text-sm font-medium text-text">{label}</label>
       <select id={id} value={value} onChange={e => onChange(e.target.value)} className="auth-input w-full px-3.5 py-2.5 rounded-lg text-sm bg-raised border border-border text-text transition-all duration-150 cursor-pointer">
-        {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+        <option value="" disabled>Select an option</option>
+        {options.map(opt => <option key={opt.id} value={opt.value}>{opt.label}</option>)}
       </select>
     </div>
   );

@@ -109,15 +109,29 @@ const Profile = () => {
     setProjectDraft(null); setExperienceDraft(null); setEducationDraft(null); setAchievementDraft(null);
   };
 
-  const handleSaveBasic = async () => { if (basicDraft) await saveBasic(basicDraft); closeModal(); };
-  const handleSaveCollaboration = async () => { if (collaborationDraft) await saveCollaboration(collaborationDraft); closeModal(); };
-  const handleSaveSkills = async () => { if (skillsDraft) await saveSkills(skillsDraft); closeModal(); };
+  const handleSaveBasic = async () => {
+     if (basicDraft) 
+      await saveBasic(basicDraft); 
+      await refetch();
+     closeModal(); 
+    };
+  const handleSaveCollaboration = async () => { if (collaborationDraft) 
+    await saveCollaboration(collaborationDraft); 
+    await refetch();
+    closeModal(); 
+  };
+  const handleSaveSkills = async () => { if (skillsDraft) 
+    await saveSkills(skillsDraft); 
+    await refetch();
+    closeModal(); 
+  };
 
   // Delegates fully to useProfile logic (which handles PUT vs POST based on existing IDs)
   const handleSaveProject = async () => {
     if (!projectDraft) return;
     try {
       await saveProject(projectDraft);
+      await refetch();
       closeModal();
     } catch (e) { console.error('Error saving. Kept modal open.'); }
   };
@@ -126,6 +140,7 @@ const Profile = () => {
     if (!experienceDraft) return;
     try {
       await saveExperience(experienceDraft);
+      await refetch();
       closeModal(); // Only closes if API call succeeds
     } catch (e) {
       console.error('Error saving experience. Kept modal open.');
@@ -136,6 +151,7 @@ const Profile = () => {
     if (!educationDraft) return;
     try {
       await saveEducation(educationDraft);
+      await refetch();
       closeModal(); // Only closes if the POST call succeeds
     } catch (e) {
       console.error('Error saving education. Kept modal open.');
@@ -153,6 +169,7 @@ const Profile = () => {
 
     try {
       await saveAchievement(achievementDraft);
+      await refetch();
       closeModal(); // Only closes if the POST call succeeds
     } catch (e) {
       console.error('Error saving achievement. Kept modal open.');
