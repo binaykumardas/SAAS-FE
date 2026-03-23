@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-refresh/only-export-components */
 // src/pages/Profile.tsx
 import { useState } from 'react';
@@ -56,7 +57,7 @@ const ErrorState = ({ message, onRetry }: { message: string; onRetry: () => void
 const Profile = () => {
   const { 
     data, loading, saving, error, saveBasic, saveCollaboration, 
-    saveSkills, saveProject, saveExperiences, saveEducations, saveAchievements, refetch 
+    saveSkills, saveProject, saveExperience, saveEducation, saveAchievement, refetch 
   } = useProfile();
 
   const[activeTab, setActiveTab] = useState<TabKey>('basic');
@@ -123,26 +124,39 @@ const Profile = () => {
 
   const handleSaveExperience = async () => {
     if (!experienceDraft) return;
-    const items = safeData.experiences;
-    const exists = items.some(i => i.id === experienceDraft.id);
-    const updated = exists ? items.map(i => i.id === experienceDraft.id ? experienceDraft : i) : [...items, experienceDraft];
-    await saveExperiences(updated); closeModal();
+    try {
+      await saveExperience(experienceDraft);
+      closeModal(); // Only closes if API call succeeds
+    } catch (e) {
+      console.error('Error saving experience. Kept modal open.');
+    }
   };
 
   const handleSaveEducation = async () => {
     if (!educationDraft) return;
-    const items = safeData.educations;
-    const exists = items.some(i => i.id === educationDraft.id);
-    const updated = exists ? items.map(i => i.id === educationDraft.id ? educationDraft : i) : [...items, educationDraft];
-    await saveEducations(updated); closeModal();
+    try {
+      await saveEducation(educationDraft);
+      closeModal(); // Only closes if the POST call succeeds
+    } catch (e) {
+      console.error('Error saving education. Kept modal open.');
+    }
   };
 
   const handleSaveAchievement = async () => {
     if (!achievementDraft) return;
-    const items = safeData.achievements;
-    const exists = items.some(i => i.id === achievementDraft.id);
-    const updated = exists ? items.map(i => i.id === achievementDraft.id ? achievementDraft : i) : [...items, achievementDraft];
-    await saveAchievements(updated); closeModal();
+
+    // VALIDATION: Prevent saving if title is blank (prevents 500 DB errors)
+    if (!achievementDraft.title.trim()) {
+      alert("Achievement Title is required!");
+      return;
+    }
+
+    try {
+      await saveAchievement(achievementDraft);
+      closeModal(); // Only closes if the POST call succeeds
+    } catch (e) {
+      console.error('Error saving achievement. Kept modal open.');
+    }
   };
 
   return (

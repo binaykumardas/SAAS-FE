@@ -2,8 +2,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   fetchProfile, updateBasicDetails, updateCollaboration,
-  updateSkills, saveProjectEntry, updateExperiences, 
-  updateEducations, updateAchievements, type ProfileData,
+  updateSkills, saveProjectEntry, saveExperienceEntry, type ProfileData,
+  saveEducationEntry,
+  saveAchievementEntry,
 } from '../services/profileService';
 import type { 
   BasicDetails, Collaboration, Skill, Project, 
@@ -19,9 +20,9 @@ interface UseProfileReturn {
   saveCollaboration: (draft: Collaboration) => Promise<void>;
   saveSkills: (skills: Skill[]) => Promise<void>;
   saveProject: (draft: Project) => Promise<void>; // Updated to handle a single project
-  saveExperiences: (experiences: Experience[]) => Promise<void>;
-  saveEducations: (educations: Education[]) => Promise<void>;
-  saveAchievements: (achievements: Achievement[]) => Promise<void>;
+  saveExperience: (draft: Experience) => Promise<void>;
+  saveEducation: (educations: Education) => Promise<void>;
+  saveAchievement: (achievements: Achievement) => Promise<void>;
   refetch: () => void;
 }
 
@@ -104,38 +105,105 @@ const useProfile = (): UseProfileReturn => {
     }
   };
 
-  // Remaining array upsert functions (assuming mock behaviors for now)
-  const saveExperiences = async (experiences: Experience[]) => {
+/**
+   * @description saveExperience Handler
+   * Evaluates if an experience is new (POST) or existing (PUT).
+   */
+  const saveExperience = async (draft: Experience) => {
     setSaving(true); setError(null);
     try {
-      const updated = await updateExperiences(experiences);
-      setData(prev => prev ? { ...prev, experiences: updated } : prev);
-    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } 
-    finally { setSaving(false); }
+      // 1. Check if it's new by looking for its ID in our existing state
+      const isNew = !data?.experiences?.some(e => e.id === draft.id);
+      
+      // 2. Make the API Call
+      const savedExperience = await saveExperienceEntry(draft, isNew);
+      
+      // 3. Update the local UI state array
+      setData(prev => {
+        if (!prev) return prev;
+        const items = prev.experiences ||[];
+        const updated = isNew 
+          ? [...items, savedExperience] // Add the new DB-persisted experience
+          : items.map(i => i.id === draft.id ? savedExperience : i); // Update existing
+        
+        return { ...prev, experiences: updated };
+      });
+    } catch (err) { 
+      setError(err instanceof Error ? err.message : 'Failed to save experience');
+      throw err; // Rethrow to prevent closing modal if API fails
+    } finally { 
+      setSaving(false); 
+    }
   };
 
-  const saveEducations = async (educations: Education[]) => {
+  /**
+   * @description saveEducation Handler
+   * Strictly calls the POST API and updates the UI state.
+   */
+  const saveEducation = async (draft: Education) => {
     setSaving(true); setError(null);
     try {
-      const updated = await updateEducations(educations);
-      setData(prev => prev ? { ...prev, educations: updated } : prev);
-    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } 
-    finally { setSaving(false); }
+      // 1. Make the API Call (POST Only)
+      const savedEducation = await saveEducationEntry(draft);
+      
+      // 2. Update the local UI state array
+      setData(prev => {
+        if (!prev) return prev;
+        const items = prev.educations ||[];
+        
+        // Safety check: If backend POST acts as an upsert and returns an existing ID, update it.
+        // Otherwise, just add the newly created education to the list.
+        const exists = items.some(i => i.id === savedEducation.id);
+        const updated = exists 
+          ? items.map(i => i.id === savedEducation.id ? savedEducation : i) 
+          : [...items, savedEducation];
+        
+        return { ...prev, educations: updated };
+      });
+    } catch (err) { 
+      setError(err instanceof Error ? err.message : 'Failed to save education');
+      throw err; // Rethrow to prevent closing modal if API fails
+    } finally { 
+      setSaving(false); 
+    }
   };
 
-  const saveAchievements = async (achievements: Achievement[]) => {
+  /**
+   * @description saveAchievement Handler
+   * Strictly calls the POST API and updates the UI state.
+   */
+  const saveAchievement = async (draft: Achievement) => {
     setSaving(true); setError(null);
     try {
-      const updated = await updateAchievements(achievements);
-      setData(prev => prev ? { ...prev, achievements: updated } : prev);
-    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save'); } 
-    finally { setSaving(false); }
+      // 1. Make the API Call (POST Only)
+      const savedAchievement = await saveAchievementEntry(draft);
+      
+      // 2. Update the local UI state array
+      setData(prev => {
+        if (!prev) return prev;
+        const items = prev.achievements ||[];
+        
+        // Safety check: If backend POST acts as an upsert and returns an existing ID, update it.
+        // Otherwise, just append the newly created achievement to the list.
+        const exists = items.some(i => i.id === savedAchievement.id);
+        const updated = exists 
+          ? items.map(i => i.id === savedAchievement.id ? savedAchievement : i) 
+          : [...items, savedAchievement];
+        
+        return { ...prev, achievements: updated };
+      });
+    } catch (err) { 
+      setError(err instanceof Error ? err.message : 'Failed to save achievement');
+      throw err; // Rethrow to prevent closing modal if API fails
+    } finally { 
+      setSaving(false); 
+    }
   };
 
   return {
     data, loading, saving, error,
     saveBasic, saveCollaboration, saveSkills, saveProject, 
-    saveExperiences, saveEducations, saveAchievements, refetch: loadProfile,
+    saveExperience, saveEducation, saveAchievement, refetch: loadProfile,
   };
 };
 
