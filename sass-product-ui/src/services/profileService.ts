@@ -10,10 +10,6 @@ import Util from '../shared/utils/utils';
 // Helper for simulated network delay for mocked endpoints
 const delay = (ms = 600) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
-// Get user info from session storage
-const userInfo = Util.getDataFromSessionStore('userInfo');
-const profileID = userInfo?.id;
-
 export interface ProfileData {
   basicDetails:  BasicDetails;
   skills:        Skill[];
@@ -25,11 +21,27 @@ export interface ProfileData {
 }
 
 // ─────────────────────────────────────────────────────────────
+// HELPER: GET DYNAMIC PROFILE ID
+// ─────────────────────────────────────────────────────────────
+const getProfileId = (): string => {
+  const userInfo = Util.getDataFromSessionStore('userInfo');
+  const profileID = userInfo?.id;
+  
+  if (!profileID) {
+    throw new Error("User ID missing. Please log in again.");
+  }
+  
+  return profileID;
+};
+
+// ─────────────────────────────────────────────────────────────
 // 1. FETCH FULL PROFILE
 // ─────────────────────────────────────────────────────────────
 export const fetchProfile = async (): Promise<ProfileData> => {
   try {
+    const profileID = getProfileId();
     const response = await axios.get(`${BASE_URL}${API}${API_VERSION}/profile/${profileID}`);
+    
     if (Util.isValidObject(response) && Util.isValidObject(response.data) && Util.isValidObject(response.data.data)) {
       return response.data.data as ProfileData;
     } 
@@ -44,6 +56,7 @@ export const fetchProfile = async (): Promise<ProfileData> => {
 // 2. UPDATE BASIC DETAILS
 // ─────────────────────────────────────────────────────────────
 export const updateBasicDetails = async (data: BasicDetails): Promise<BasicDetails> => {
+  const profileID = getProfileId();
   const PAYLOAD = {
     firstName: data.firstName,
     lastName: data.lastName,
@@ -68,11 +81,8 @@ export const updateBasicDetails = async (data: BasicDetails): Promise<BasicDetai
 // ─────────────────────────────────────────────────────────────
 // 3. CREATE / UPDATE PROJECT (POST & PUT)
 // ─────────────────────────────────────────────────────────────
-/**
- * @description Creates or Updates a single project in the database.
- * If isNew is true, performs a POST request. If false, performs a PUT request.
- */
 export const saveProjectEntry = async (data: Project, isNew: boolean): Promise<Project> => {
+  const profileID = getProfileId();
   const PAYLOAD = {
     userId: profileID,
     projectName: data.name,
@@ -89,18 +99,14 @@ export const saveProjectEntry = async (data: Project, isNew: boolean): Promise<P
     let response;
     
     if (isNew) {
-      // POST - Create new project
       const url = `${BASE_URL}${API}${API_VERSION}/projects`;
       response = await axios.post(url, PAYLOAD);
     } else {
-      // PUT - Update existing project
       const url = `${BASE_URL}${API}${API_VERSION}/projects/${data.id}`;
       response = await axios.put(url, PAYLOAD);
     }
 
-    if (Util.isValidObject(response?.data?.data)) {
-      return response.data.data as Project;
-    }
+    if (Util.isValidObject(response?.data?.data)) return response.data.data as Project;
     throw new Error("Server updated successfully, but no data was returned.");
   } catch (error: any) {
     console.error('[SERVICE ERROR] saveProjectEntry:', error);
@@ -112,7 +118,9 @@ export const saveProjectEntry = async (data: Project, isNew: boolean): Promise<P
 // 4. UPDATE SKILLS
 // ─────────────────────────────────────────────────────────────
 export const updateSkills = async (data: Skill[]): Promise<Skill[]> => {
+  const profileID = getProfileId();
   const PAYLOAD = { skills: data.map((s) => ({ name: s.name, category: s.category, proficiency: s.level })) };
+  
   try {
     const response = await axios.put(`${BASE_URL}${API}${API_VERSION}/profile/${profileID}/skills`, PAYLOAD);
     if(Util.isValidObject(response?.data?.data)) return response.data.data.skills as Skill[];
@@ -123,9 +131,10 @@ export const updateSkills = async (data: Skill[]): Promise<Skill[]> => {
 }
 
 // ─────────────────────────────────────────────────────────────
-// MOCKED ENDPOINTS (Update these later when APIs are ready)
+// 5. UPDATE COLLABORATION
 // ─────────────────────────────────────────────────────────────
 export const updateCollaboration = async (data: Collaboration): Promise<Collaboration> => {
+  const profileID = getProfileId();
   const PAYLOAD = {
       myPitch: data.pitch,
       projectTypes: data.projectTypes,
@@ -133,26 +142,25 @@ export const updateCollaboration = async (data: Collaboration): Promise<Collabor
       availability: data.availability,
       workStyle: data.workStyle,
       timeZone: data.timezone
-  }
-  const response = await axios.put(`${BASE_URL}${API}${API_VERSION}/profile/${profileID}/collaboration`, PAYLOAD);
+  };
+  
   try {
+    const response = await axios.put(`${BASE_URL}${API}${API_VERSION}/profile/${profileID}/collaboration`, PAYLOAD);
     if(Util.isValidObject(response)) {
       return response?.data?.data;
-    } else {
-      throw new Error("Server updated successfully, but no data was returned.");
-    }
+    } 
+    throw new Error("Server updated successfully, but no data was returned.");
   } catch(e:any) {
     console.error(e);
     throw new Error(e.response?.data?.message || e.message || 'Failed to update collaboration');
   }
 };
 
-/**
- * @description Creates or Updates a single experience entry in the database.
- * If isNew is true, performs a POST request. If false, performs a PUT request.
- */
+// ─────────────────────────────────────────────────────────────
+// 6. SAVE EXPERIENCE
+// ─────────────────────────────────────────────────────────────
 export const saveExperienceEntry = async (data: Experience, isNew: boolean): Promise<Experience> => {
-  // Construct payload mapping to your backend model
+  const profileID = getProfileId();
   const PAYLOAD = {
     userId: profileID,
     companyName: data.company,
@@ -167,18 +175,14 @@ export const saveExperienceEntry = async (data: Experience, isNew: boolean): Pro
     let response;
     
     if (isNew) {
-      // API INTEGRATION: POST - Create new experience
       const url = `${BASE_URL}${API}${API_VERSION}/experiences`;
       response = await axios.post(url, PAYLOAD);
     } else {
-      // API INTEGRATION: PUT - Update existing experience
       const url = `${BASE_URL}${API}${API_VERSION}/experiences/${data.id}`;
       response = await axios.put(url, PAYLOAD);
     }
 
-    if (Util.isValidObject(response?.data?.data)) {
-      return response.data.data as Experience;
-    }
+    if (Util.isValidObject(response?.data?.data)) return response.data.data as Experience;
     throw new Error("Server updated successfully, but no data was returned.");
   } catch (error: any) {
     console.error('[SERVICE ERROR] saveExperienceEntry:', error);
@@ -186,16 +190,11 @@ export const saveExperienceEntry = async (data: Experience, isNew: boolean): Pro
   }
 };
 
-/**
- * @description Saves an education entry using ONLY the POST API.
- * http://localhost:3000/api/v1/profile/:id/education
- */
+// ─────────────────────────────────────────────────────────────
+// 7. SAVE EDUCATION
+// ─────────────────────────────────────────────────────────────
 export const saveEducationEntry = async (data: Education): Promise<Education> => {
-  // Get the profileID from session storage
-  const userInfo = Util.getDataFromSessionStore('userInfo');
-  const profileID = userInfo?.id;
-
-  // Construct payload mapping to your backend model
+  const profileID = getProfileId();
   const PAYLOAD = {
     institution: data.institution,
     degree: data.degree,
@@ -206,13 +205,10 @@ export const saveEducationEntry = async (data: Education): Promise<Education> =>
   };
 
   try {
-    // API INTEGRATION: POST ONLY
     const url = `${BASE_URL}${API}${API_VERSION}/education/${profileID}`;
     const response = await axios.post(url, PAYLOAD);
 
-    if (Util.isValidObject(response?.data?.data)) {
-      return response.data.data as Education;
-    }
+    if (Util.isValidObject(response?.data?.data)) return response.data.data as Education;
     throw new Error("Server saved successfully, but no data was returned.");
   } catch (error: any) {
     console.error('[SERVICE ERROR] saveEducationEntry:', error);
@@ -220,18 +216,12 @@ export const saveEducationEntry = async (data: Education): Promise<Education> =>
   }
 };
 
-/**
- * @description Saves an achievement entry using ONLY the POST API.
- * http://localhost:3000/api/v1/achievements
- */
+// ─────────────────────────────────────────────────────────────
+// 8. SAVE ACHIEVEMENT
+// ─────────────────────────────────────────────────────────────
 export const saveAchievementEntry = async (data: Achievement): Promise<Achievement> => {
-  const userInfo = Util.getDataFromSessionStore('userInfo');
-  const profileID = userInfo?.id;
-
-  if (!profileID) throw new Error("User ID missing. Please log in again.");
-
-  // Map the draft data. 
-  // IMPORTANT: We include userId in the payload since it's not in the URL!
+  const profileID = getProfileId();
+  
   const PAYLOAD = {
     userId: profileID, 
     title: data.title || "Untitled Achievement",
@@ -242,18 +232,14 @@ export const saveAchievementEntry = async (data: Achievement): Promise<Achieveme
   };
 
   try {
-    // API INTEGRATION: POST ONLY
     const url = `${BASE_URL}${API}${API_VERSION}/achievements`;
-    
     console.log("Sending POST Achievement Payload:", PAYLOAD);
     
     const response = await axios.post(url, PAYLOAD, { 
       headers: { 'Content-Type': 'application/json' } 
     });
 
-    if (Util.isValidObject(response?.data?.data)) {
-      return response.data.data as Achievement;
-    }
+    if (Util.isValidObject(response?.data?.data)) return response.data.data as Achievement;
     throw new Error("Server saved successfully, but no data was returned.");
   } catch (error: any) {
     console.error('[SERVICE ERROR] saveAchievementEntry:', error);
