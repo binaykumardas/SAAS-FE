@@ -1,0 +1,5 @@
+[
+    { "id": 1, "label": "Degree", "value": "Degree" },
+    { "id": 2, "label": "Certification", "value": "Certification" },
+    { "id": 3, "label": "Bootcamp", "value": "Bootcamp" }
+]

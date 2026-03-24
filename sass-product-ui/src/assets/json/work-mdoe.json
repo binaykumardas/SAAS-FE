@@ -1,0 +1,5 @@
+[
+    { "id": 1, "label": "Remote", "value": "Remote" },
+    { "id": 2, "label": "Hybrid", "value": "Hybrid" },
+    { "id": 3, "label": "In-person", "value": "In-person" }
+]

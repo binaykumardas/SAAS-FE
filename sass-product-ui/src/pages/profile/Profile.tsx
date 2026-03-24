@@ -92,15 +92,15 @@ const Profile = () => {
     }
     if (tab === 'experience') {
       const existing = itemId ? safeData.experiences.find(e => e.id === itemId) : null;
-      setExperienceDraft(existing ? { ...existing } : { id: Date.now().toString(), company: '', role: '', type: 'Full-time', startDate: '', endDate: '', description: '' });
+      setExperienceDraft(existing ? { ...existing } : { id: Date.now().toString(), company: '', role: '', type: '', startDate: '', endDate: '', description: '' });
     }
     if (tab === 'education') {
       const existing = itemId ? safeData.educations.find(e => e.id === itemId) : null;
-      setEducationDraft(existing ? { ...existing } : { id: Date.now().toString(), institution: '', degree: '', type: 'Degree', startYear: '', endYear: '', link: '' });
+      setEducationDraft(existing ? { ...existing } : { id: Date.now().toString(), institution: '', degree: '', type: '', startYear: '', endYear: '', link: '' });
     }
     if (tab === 'achievements') {
       const existing = itemId ? safeData.achievements.find(a => a.id === itemId) : null;
-      setAchievementDraft(existing ? { ...existing } : { id: Date.now().toString(), title: '', type: 'Hackathon', date: '', description: '', link: '' });
+      setAchievementDraft(existing ? { ...existing } : { id: Date.now().toString(), title: '', type: '', date: '', description: '', link: '' });
     }
     setEditModal(tab);
   };

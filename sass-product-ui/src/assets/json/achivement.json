@@ -1,0 +1,5 @@
+[
+    { "id": 1, "label": "Hackathon", "value": "Hackathon" },
+    { "id": 2, "label": "Award", "value": "Award" },
+    { "id": 3, "label": "Publication", "value": "Publication" }
+]
