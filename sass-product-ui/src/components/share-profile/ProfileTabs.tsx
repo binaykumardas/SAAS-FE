@@ -98,29 +98,61 @@ export const ProjectsTab = ({ projects, onAdd, onEdit }: { projects: Project[]; 
   );
 };
 
-export const CollaborateTab = ({ collaboration, onEdit }: { collaboration: Collaboration; onEdit: () => void; }) => (
-  <SectionCard title="Looking to Collaborate" onEdit={onEdit}>
-    <div className="flex flex-col gap-5">
-      <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-muted mb-2">My Pitch</p>
-        <p className="text-sm text-secondary leading-relaxed">{collaboration?.pitch || 'No pitch added yet.'}</p>
-      </div>
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+export const CollaborateTab = ({ collaboration, onEdit }: { collaboration: Collaboration; onEdit: () => void; }) => {
+
+  // Clean JSON garbage from stored array values
+  const cleanTags = (arr: unknown): string[] => {
+    if (!arr) return [];
+
+    // If it's a string, try parsing it first
+    if (typeof arr === 'string') {
+      try { arr = JSON.parse(arr); } catch { 
+        return (arr as string).replace(/[{}"[\]\\]/g, '').split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
+
+    if (!Array.isArray(arr)) return [];
+
+    return arr
+      .map(t => typeof t === 'string' ? t.replace(/[{}"[\]\\]/g, '').trim() : '')
+      .filter(Boolean);
+  };
+
+  const projectTypes = cleanTags(collaboration?.projectTypes);
+  const lookingFor = cleanTags(collaboration?.lookingFor);
+
+  return (
+    <SectionCard title="Looking to Collaborate" onEdit={onEdit}>
+      <div className="flex flex-col gap-5">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Project Types</p>
-          <div className="flex flex-wrap gap-1.5">{(collaboration?.projectTypes ||[]).map(t => <Tag key={t} label={t} />)}</div>
+          <p className="text-xs font-bold uppercase tracking-wider text-muted mb-2">My Pitch</p>
+          <p className="text-sm text-secondary leading-relaxed">{collaboration?.pitch || 'No pitch added yet.'}</p>
         </div>
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Looking For</p>
-          <div className="flex flex-wrap gap-1.5">{(collaboration?.lookingFor ||[]).map(t => <Tag key={t} label={t} />)}</div>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Project Types</p>
+            <div className="flex flex-wrap gap-1.5">
+              {projectTypes.length > 0
+                ? projectTypes.map(t => <Tag key={t} label={t} />)
+                : <span className="text-sm text-muted">—</span>}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Looking For</p>
+            <div className="flex flex-wrap gap-1.5">
+              {lookingFor.length > 0
+                ? lookingFor.map(t => <Tag key={t} label={t} />)
+                : <span className="text-sm text-muted">—</span>}
+            </div>
+          </div>
+          <DetailField label="Availability" value={collaboration?.availability || '—'} />
+          <DetailField label="Work Style" value={collaboration?.workStyle || '—'} />
+          <DetailField label="Time Zone" value={collaboration?.timezone || '—'} />
         </div>
-        <DetailField label="Availability" value={collaboration?.availability || '—'} />
-        <DetailField label="Work Style" value={collaboration?.workStyle || '—'} />
-        <DetailField label="Time Zone" value={collaboration?.timezone || '—'} />
       </div>
-    </div>
-  </SectionCard>
-);
+    </SectionCard>
+  );
+};
 
 export const ExperienceTab = ({ experiences, onAdd, onEdit }: { experiences: Experience[]; onAdd: () => void; onEdit: (id: string) => void; }) => {
   if (!experiences || experiences.length === 0) return <EmptyState icon="💼" title="No experience added" description="Add your work history." actionLabel="+ Add Experience" onAction={onAdd} />;

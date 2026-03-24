@@ -1,0 +1,6 @@
+[
+    { "id": 1, "label": "Full-time", "value": "Full-time" },
+    { "id": 2, "label": "Part-time", "value": "Part-time" },
+    { "id": 3, "label": "Internship", "value": "Internship" },
+    { "id": 4, "label": "Freelance", "value": "Freelance" }
+]

@@ -92,7 +92,7 @@ const Profile = () => {
     }
     if (tab === 'experience') {
       const existing = itemId ? safeData.experiences.find(e => e.id === itemId) : null;
-      setExperienceDraft(existing ? { ...existing } : { id: Date.now().toString(), company: '', role: '', type: 'Full-time', startDate: '', endDate: '', description: '' });
+      setExperienceDraft(existing ? { ...existing } : { id: Date.now().toString(), company: '', role: '', type: '', startDate: '', endDate: '', description: '' });
     }
     if (tab === 'education') {
       const existing = itemId ? safeData.educations.find(e => e.id === itemId) : null;
