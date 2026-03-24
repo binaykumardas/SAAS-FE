@@ -119,12 +119,21 @@ export const saveProjectEntry = async (data: Project, isNew: boolean): Promise<P
 // ─────────────────────────────────────────────────────────────
 export const updateSkills = async (data: Skill[]): Promise<Skill[]> => {
   const profileID = getProfileId();
-  const PAYLOAD = { skills: data.map((s) => ({ name: s.name, category: s.category, proficiency: s.level })) };
+  const PAYLOAD = {
+    skills: data.map((s) => ({
+      name: s.name,
+      category: s.category,
+      proficiency: s.level || s.proficiency || 'Beginner',
+    })),
+  };
   
   try {
-    const response = await axios.put(`${BASE_URL}${API}${API_VERSION}/profile/${profileID}/skills`, PAYLOAD);
-    if(Util.isValidObject(response?.data?.data)) return response.data.data.skills as Skill[];
-    throw new Error("Server updated successfully, but no data was returned.");
+    if(Util.isValidObject(PAYLOAD) && Util.isValidArray(PAYLOAD.skills)) {
+        const response = await axios.put(`${BASE_URL}${API}${API_VERSION}/profile/${profileID}/skills`, PAYLOAD);
+        if(Util.isValidObject(response?.data?.data)) return response.data.data.skills as Skill[];
+        throw new Error("Server updated successfully, but no data was returned.");
+    }
+        throw new Error("Unable to cal the api");
   } catch(e:any) {
     throw new Error(e.response?.data?.message || e.message || 'Failed to update skills');
   }
