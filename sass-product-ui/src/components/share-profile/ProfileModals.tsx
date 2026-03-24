@@ -145,6 +145,7 @@ export const CollaborateModal = ({
 // ─────────────────────────────────────────────────────────────
 // COMPONENT 3 — SkillsModal
 // ─────────────────────────────────────────────────────────────
+
 export const SkillsModal = ({
   isOpen, onClose, onSave, saving = false, draft, setDraft,
 }: {
@@ -152,23 +153,59 @@ export const SkillsModal = ({
   draft: Skill[]; setDraft: React.Dispatch<React.SetStateAction<Skill[] | null>>;
 }) => {
   const [skillName, setSkillName] = useState('');
-  const [category, setCategory] = useState('');
-  const [level, setLevel] = useState<SkillLevel>('Intermediate');
+  const[category, setCategory] = useState('');
+  const [level, setLevel] = useState<SkillLevel | ''>('');
   
+  const [errors, setErrors] = useState<{ category?: string; skillName?: string; level?: string }>({});
+
+  // NEW: Tracks if the user successfully added a new skill during this modal session
+  const [hasAddedNewSkill, setHasAddedNewSkill] = useState(false);
+
   const LEVELS =[
-    { id:1,label: 'Expert', value: 'Expert' }, 
-    { id:2,label: 'Intermediate', value: 'Intermediate' }, 
-    { id:3,label: 'Beginner', value: 'Beginner' },
+    { id: 1, label: 'Expert', value: 'Expert' }, 
+    { id: 2, label: 'Intermediate', value: 'Intermediate' }, 
+    { id: 3, label: 'Beginner', value: 'Beginner' },
   ];
 
-  const handleAddSkill = () => {
-    if (!skillName.trim()) return;
-    const isDuplicate = draft?.some(s => s.name.toLowerCase() === skillName.toLowerCase());
-    if (isDuplicate) { alert("This skill is already in your list."); return; }
+  const validateSkillForm = (): boolean => {
+    const newErrors: { category?: string; skillName?: string; level?: string } = {};
 
-    const newSkill: Skill = { id: Date.now().toString(), name: skillName.trim(), category, level: level as SkillLevel };
-    setDraft(prev => prev ?[...prev, newSkill] : [newSkill]);
-    setSkillName(''); 
+    if (!category) newErrors.category = "This field is required";
+    if (!skillName.trim()) newErrors.skillName = "This field is required";
+    if (!level) newErrors.level = "This field is required";
+
+    // Only check for duplicates if the user actually typed a skill name
+    if (skillName.trim()) {
+      const isDuplicate = draft?.some(
+        s => (s?.name || '').toLowerCase() === skillName.trim().toLowerCase()
+      );
+      if (isDuplicate) newErrors.skillName = "This skill is already in your list.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // true = valid, false = invalid
+  };
+
+  const handleAddSkill = () => {
+    if (!validateSkillForm()) return; // Blocks adding if validation fails
+  
+    const newSkill: Skill = {
+      id: Date.now().toString(),
+      name: skillName.trim(),
+      category,
+      level: level as SkillLevel,
+    };
+  
+    setDraft(prev => prev ? [...prev, newSkill] : [newSkill]);
+  
+    // Clear inputs upon successful add
+    setSkillName('');
+    setCategory('');
+    setLevel('');
+    setErrors({});
+
+    // MARK AS SUCCESSFUL: The user fulfilled the requirement of adding a new skill!
+    setHasAddedNewSkill(true);
   };
 
   const handleRemoveSkill = (skillToRemove: Skill) => {
@@ -177,26 +214,113 @@ export const SkillsModal = ({
 
   const getNormalizedLevel = (skill: Skill): SkillLevel => (skill.level || skill.proficiency || 'Beginner') as SkillLevel;
 
+  const handleSave = () => {
+      // Check if user typed anything but forgot to click the "Add" button
+      const hasPendingInput = skillName.trim() !== '' || category !== '' || level !== '';
+
+      // REQUIREMENT 1 & 2: If they have old data but didn't add a NEW skill, 
+      // OR if they have pending text/validation errors showing.
+      if (!hasAddedNewSkill || hasPendingInput) {
+        validateSkillForm(); // Force the inputs to turn red to show they are required
+        alert("Please add any one skill."); // Show exact requested message
+        return; // Block save, keep modal open
+      }
+
+      // Safety Check: Prevent saving if the draft is entirely empty
+      if (!draft || draft.length === 0) {
+        alert("Please add any one skill.");
+        return;
+      }
+
+      // REQUIREMENT 3: Successfully added a skill, no validation errors -> Save & Close
+      onSave(); 
+  };
+
   return (
-    <EditModal title="Add Skills & Technologies" isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
+    <EditModal
+      title="Add Skills & Technologies"
+      isOpen={isOpen}
+      onClose={onClose}
+      onSave={handleSave} // Connected to our new robust save logic
+      saving={saving}
+    >
       <div className="flex flex-col gap-6">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-          <div className="md:col-span-4"><FormSelect label="Category" value={category} onChange={setCategory} options={SKILL_CATEGORIES} /></div>
-          <div className="md:col-span-4"><FormInput label="Skill Name" value={skillName} onChange={setSkillName} placeholder="e.g., React, Python" /></div>
-          <div className="md:col-span-3"><FormSelect label="Proficiency" value={level} onChange={v => setLevel(v as SkillLevel)} options={LEVELS} /></div>
-          <div className="md:col-span-1 flex flex-col justify-end"><button type="button" onClick={handleAddSkill} disabled={!skillName.trim()} className="w-full py-2.5 bg-accent text-white font-semibold rounded-lg text-sm hover:bg-accent-hover transition-all">Add</button></div>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+          
+          <div className="md:col-span-4">
+            <FormSelect
+              label="Category"
+              value={category}
+              onChange={(val) => {
+                setCategory(val);
+                if (errors.category) setErrors(prev => ({ ...prev, category: undefined })); 
+              }}
+              options={SKILL_CATEGORIES}
+              error={errors.category} 
+            />
+          </div>
+
+          <div className="md:col-span-4">
+            <FormInput
+              label="Skill Name"
+              value={skillName}
+              onChange={(val) => {
+                setSkillName(val);
+                if (errors.skillName) setErrors(prev => ({ ...prev, skillName: undefined })); 
+              }}
+              placeholder="e.g., React, Python"
+              error={errors.skillName} 
+            />
+          </div>
+
+          <div className="md:col-span-3">
+            <FormSelect
+              label="Proficiency"
+              value={level}
+              onChange={(val) => {
+                setLevel(val as SkillLevel);
+                if (errors.level) setErrors(prev => ({ ...prev, level: undefined })); 
+              }}
+              options={LEVELS}
+              error={errors.level} 
+            />
+          </div>
+
+          <div className="md:col-span-1 flex flex-col pt-7">
+            <button
+              type="button"
+              onClick={handleAddSkill}
+              className="w-full py-2.5 bg-accent text-white font-semibold rounded-lg text-sm hover:bg-accent-hover transition-all"
+            >
+              Add
+            </button>
+          </div>
         </div>
+
         {draft && draft.length > 0 && (
           <div className="flex flex-col gap-3 pt-5 border-t border-border">
-            <p className="text-xs font-bold uppercase tracking-wider text-muted">Skills to save</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted">
+              Skills to save
+            </p>
             <div className="flex flex-wrap gap-2">
               {draft.map((skill) => {
                 const currentLevel = getNormalizedLevel(skill);
                 return (
-                  <div key={skill.id || skill.name} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold ${currentLevel === 'Expert' ? 'bg-accent-tint text-accent border-accent-tint' : 'bg-raised text-secondary border-border'}`}>
+                  <div
+                    key={skill.id || skill.name}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold ${currentLevel === "Expert" ? "bg-accent-tint text-accent border-accent-tint" : "bg-raised text-secondary border-border"}`}
+                  >
                     <span>{skill.name}</span>
-                    <span className="text-[10px] font-normal opacity-70">{currentLevel.charAt(0)}</span>
-                    <button type="button" onClick={() => handleRemoveSkill(skill)} className="ml-1 hover:text-red-500 opacity-70 hover:opacity-100 transition-colors">✕</button>
+                    <span className="text-[10px] font-normal opacity-70">
+                      {currentLevel.charAt(0)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSkill(skill)}
+                      className="ml-1 hover:text-red-500 opacity-70 hover:opacity-100 transition-colors"
+                    >
+                      ✕
+                    </button>
                   </div>
                 );
               })}

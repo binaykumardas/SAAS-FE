@@ -16,6 +16,7 @@ import {
   BasicModal, CollaborateModal, SkillsModal, ProjectsModal,
   ExperienceModal, EducationModal, AchievementsModal
 } from '../../components/share-profile/ProfileModals';
+import Util from '../../shared/utils/utils';
 
 export const formatDate = (d: string) => {
   if (!d) return '—';
@@ -115,15 +116,27 @@ const Profile = () => {
       await refetch();
      closeModal(); 
     };
+
+
   const handleSaveCollaboration = async () => { if (collaborationDraft) 
     await saveCollaboration(collaborationDraft); 
     await refetch();
     closeModal(); 
   };
-  const handleSaveSkills = async () => { if (skillsDraft) 
-    await saveSkills(skillsDraft); 
-    await refetch();
-    closeModal(); 
+
+
+  const handleSaveSkills = async () => {
+    if(!skillsDraft) return;
+    try {
+      await saveSkills(skillsDraft); 
+      console.log('skillsDraft',skillsDraft);
+      if(Util.isValidArray(skillsDraft)) {
+          await refetch();
+          closeModal(); 
+      }
+    } catch(e) {
+        console.error('Error saving. Kept modal open.');
+    }
   };
 
   // Delegates fully to useProfile logic (which handles PUT vs POST based on existing IDs)
@@ -179,50 +192,166 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-bg transition-colors duration-250">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-text">My Profile</h1>
-            <p className="text-sm text-secondary mt-1">Manage your personal information</p>
+            <p className="text-sm text-secondary mt-1">
+              Manage your personal information
+            </p>
           </div>
           <div className="hidden sm:flex items-center gap-2 bg-surface border border-border rounded-xl px-4 py-2 shadow-card">
             <div className="w-2 h-2 rounded-full bg-accent" />
-            <span className="text-xs font-semibold text-text">Profile Active</span>
+            <span className="text-xs font-semibold text-text">
+              Profile Active
+            </span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <ProfileSidebar basic={safeData.basicDetails} formatDate={formatDate} formatLabel={formatLabel} />
-          
+          <ProfileSidebar
+            basic={safeData.basicDetails}
+            formatDate={formatDate}
+            formatLabel={formatLabel}
+          />
+
           <div className="lg:col-span-2 flex flex-col gap-5">
             <div className="overflow-x-auto pb-1">
               <div className="flex gap-1 bg-raised border border-border rounded-xl p-1 w-fit">
-                {TABS.map(tab => (
-                  <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === tab.key ? 'bg-surface text-accent shadow-card' : 'text-secondary hover:text-text'}`}>
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === tab.key ? "bg-surface text-accent shadow-card" : "text-secondary hover:text-text"}`}
+                  >
                     {tab.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {activeTab === 'basic' && <BasicTab basic={safeData.basicDetails} formatDate={formatDate} formatLabel={formatLabel} onEdit={() => openModal('basic')} />}
-            {activeTab === 'skills' && <SkillsTab skills={safeData.skills} onEdit={() => openModal('skills')} />}
-            {activeTab === 'projects' && <ProjectsTab projects={safeData.projects} onAdd={() => openModal('projects')} onEdit={(id) => openModal('projects', id)} />}
-            {activeTab === 'collaborate' && <CollaborateTab collaboration={safeData.collaboration} onEdit={() => openModal('collaborate')} />}
-            {activeTab === 'experience' && <ExperienceTab experiences={safeData.experiences} onAdd={() => openModal('experience')} onEdit={(id) => openModal('experience', id)} />}
-            {activeTab === 'education' && <EducationTab educations={safeData.educations} onAdd={() => openModal('education')} onEdit={(id) => openModal('education', id)} />}
-            {activeTab === 'achievements' && <AchievementsTab achievements={safeData.achievements} formatDate={formatDate} onAdd={() => openModal('achievements')} onEdit={(id) => openModal('achievements', id)} />}
+            {activeTab === "basic" && (
+              <BasicTab
+                basic={safeData.basicDetails}
+                formatDate={formatDate}
+                formatLabel={formatLabel}
+                onEdit={() => openModal("basic")}
+              />
+            )}
+            {activeTab === "skills" && (
+              <SkillsTab
+                skills={safeData.skills}
+                onEdit={() => openModal("skills")}
+              />
+            )}
+            {activeTab === "projects" && (
+              <ProjectsTab
+                projects={safeData.projects}
+                onAdd={() => openModal("projects")}
+                onEdit={(id) => openModal("projects", id)}
+              />
+            )}
+            {activeTab === "collaborate" && (
+              <CollaborateTab
+                collaboration={safeData.collaboration}
+                onEdit={() => openModal("collaborate")}
+              />
+            )}
+            {activeTab === "experience" && (
+              <ExperienceTab
+                experiences={safeData.experiences}
+                onAdd={() => openModal("experience")}
+                onEdit={(id) => openModal("experience", id)}
+              />
+            )}
+            {activeTab === "education" && (
+              <EducationTab
+                educations={safeData.educations}
+                onAdd={() => openModal("education")}
+                onEdit={(id) => openModal("education", id)}
+              />
+            )}
+            {activeTab === "achievements" && (
+              <AchievementsTab
+                achievements={safeData.achievements}
+                formatDate={formatDate}
+                onAdd={() => openModal("achievements")}
+                onEdit={(id) => openModal("achievements", id)}
+              />
+            )}
           </div>
         </div>
       </div>
 
-      {basicDraft && <BasicModal isOpen={editModal === 'basic'} onClose={closeModal} onSave={handleSaveBasic} saving={saving} draft={basicDraft} setDraft={setBasicDraft} />}
-      {collaborationDraft && <CollaborateModal isOpen={editModal === 'collaborate'} onClose={closeModal} onSave={handleSaveCollaboration} saving={saving} draft={collaborationDraft} setDraft={setCollaborationDraft} />}
-      {skillsDraft && <SkillsModal isOpen={editModal === 'skills'} onClose={closeModal} onSave={handleSaveSkills} saving={saving} draft={skillsDraft} setDraft={setSkillsDraft} />}
-      {projectDraft && <ProjectsModal isOpen={editModal === 'projects'} onClose={closeModal} onSave={handleSaveProject} saving={saving} draft={projectDraft} setDraft={setProjectDraft} />}
-      {experienceDraft && <ExperienceModal isOpen={editModal === 'experience'} onClose={closeModal} onSave={handleSaveExperience} saving={saving} draft={experienceDraft} setDraft={setExperienceDraft} />}
-      {educationDraft && <EducationModal isOpen={editModal === 'education'} onClose={closeModal} onSave={handleSaveEducation} saving={saving} draft={educationDraft} setDraft={setEducationDraft} />}
-      {achievementDraft && <AchievementsModal isOpen={editModal === 'achievements'} onClose={closeModal} onSave={handleSaveAchievement} saving={saving} draft={achievementDraft} setDraft={setAchievementDraft} />}
+      {basicDraft && (
+        <BasicModal
+          isOpen={editModal === "basic"}
+          onClose={closeModal}
+          onSave={handleSaveBasic}
+          saving={saving}
+          draft={basicDraft}
+          setDraft={setBasicDraft}
+        />
+      )}
+      {collaborationDraft && (
+        <CollaborateModal
+          isOpen={editModal === "collaborate"}
+          onClose={closeModal}
+          onSave={handleSaveCollaboration}
+          saving={saving}
+          draft={collaborationDraft}
+          setDraft={setCollaborationDraft}
+        />
+      )}
+      {skillsDraft && (
+        <SkillsModal
+          isOpen={editModal === "skills"}
+          onClose={closeModal}
+          onSave={handleSaveSkills}
+          saving={saving}
+          draft={skillsDraft}
+          setDraft={setSkillsDraft}
+        />
+      )}
+      {projectDraft && (
+        <ProjectsModal
+          isOpen={editModal === "projects"}
+          onClose={closeModal}
+          onSave={handleSaveProject}
+          saving={saving}
+          draft={projectDraft}
+          setDraft={setProjectDraft}
+        />
+      )}
+      {experienceDraft && (
+        <ExperienceModal
+          isOpen={editModal === "experience"}
+          onClose={closeModal}
+          onSave={handleSaveExperience}
+          saving={saving}
+          draft={experienceDraft}
+          setDraft={setExperienceDraft}
+        />
+      )}
+      {educationDraft && (
+        <EducationModal
+          isOpen={editModal === "education"}
+          onClose={closeModal}
+          onSave={handleSaveEducation}
+          saving={saving}
+          draft={educationDraft}
+          setDraft={setEducationDraft}
+        />
+      )}
+      {achievementDraft && (
+        <AchievementsModal
+          isOpen={editModal === "achievements"}
+          onClose={closeModal}
+          onSave={handleSaveAchievement}
+          saving={saving}
+          draft={achievementDraft}
+          setDraft={setAchievementDraft}
+        />
+      )}
     </div>
   );
 };
