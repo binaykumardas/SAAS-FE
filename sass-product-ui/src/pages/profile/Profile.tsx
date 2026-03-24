@@ -129,7 +129,6 @@ const Profile = () => {
     if(!skillsDraft) return;
     try {
       await saveSkills(skillsDraft); 
-      console.log('skillsDraft',skillsDraft);
       if(Util.isValidArray(skillsDraft)) {
           await refetch();
           closeModal(); 
