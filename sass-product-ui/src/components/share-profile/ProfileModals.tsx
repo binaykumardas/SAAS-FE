@@ -10,6 +10,8 @@ import type {
 import { SKILL_CATEGORIES } from '../../shared/constant/categories';
 import skillList from '../../assets/json/skills.json';
 import genderList from '../../assets/json/gender.json'
+import projectStatus from '../../assets/json/project-status.json'
+import roles from '../../assets/json/project-role.json'
 
 
 // ─────────────────────────────────────────────────────────────
@@ -333,39 +335,163 @@ export const SkillsModal = ({
 };
 
 // ─────────────────────────────────────────────────────────────
-// COMPONENT 4 — ProjectsModal (Comma Bug fixed)
+// COMPONENT 4 — ProjectsModal
 // ─────────────────────────────────────────────────────────────
-export const ProjectsModal = ({
-  isOpen, onClose, onSave, saving = false, draft, setDraft,
-}: {
-  isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
-  draft: Project; setDraft: React.Dispatch<React.SetStateAction<Project | null>>;
-}) => {
-  // Isolate raw string state to allow natural typing with commas
-  const [techStackStr, setTechStackStr] = useState(draft.techStack.join(', '));
 
-  // Reset the input field if a different project ID is passed
-  useEffect(() => { setTechStackStr(draft.techStack.join(', ')); }, [draft.id]);
+export const ProjectsModal = ({
+  isOpen,
+  onClose,
+  onSave,
+  saving = false,
+  draft,
+  setDraft,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  saving?: boolean;
+  draft: Project;
+  setDraft: React.Dispatch<React.SetStateAction<Project | null>>;
+}) => {
+  // It only keeps letters, numbers, spaces, dots, hyphens, plus, and hash (for HTML5, Node.js, C++)
+  const cleanTechStack = (stack: string[]) => {
+    if (!stack || !Array.isArray(stack)) return[];
+    return stack
+      .map((t) => (typeof t === "string" ? t.replace(/[^a-zA-Z0-9\s.\-#+]/g, "").trim() : ""))
+      .filter(Boolean);
+  };
+
+  const[techStackStr, setTechStackStr] = useState(cleanTechStack(draft.techStack).join(", "));
+  
+  const [errors, setErrors] = useState<{
+    name?: string;
+    description?: string;
+    techStack?: string;
+    role?: string;
+    status?: string;
+  }>({});
+
+  useEffect(() => {
+    setTechStackStr(cleanTechStack(draft.techStack).join(", "));
+    setErrors({});
+  }, [draft.id, isOpen]);
+
+  const handleSave = () => {
+    const newErrors: {
+      name?: string;
+      description?: string;
+      techStack?: string;
+      role?: string;
+      status?: string;
+    } = {};
+
+    if (!draft.name.trim()) newErrors.name = "This field is required.";
+    if (!draft.description.trim()) newErrors.description = "This field is required.";
+    if (!techStackStr.trim()) newErrors.techStack = "This field is required.";
+    if (!draft.role) newErrors.role = "This field is required.";
+    if (!draft.status) newErrors.status = "This field is required.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    onSave();
+  };
 
   return (
-    <EditModal title={draft.name ? "Edit Project" : "Add Project"} isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
+    <EditModal
+      title={draft.name ? "Edit Project" : "Add Project"}
+      isOpen={isOpen}
+      onClose={onClose}
+      onSave={handleSave}
+      saving={saving}
+    >
       <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2"><FormInput label="Project Name" value={draft.name} placeholder="e.g. DevConnect" onChange={v => setDraft(d => d ? { ...d, name: v } : d)} /></div>
-        <div className="col-span-2"><FormTextarea label="Description" value={draft.description} rows={2} onChange={v => setDraft(d => d ? { ...d, description: v } : d)} /></div>
         <div className="col-span-2">
-          <FormInput 
-            label="Tech Stack (comma separated)" 
-            value={techStackStr} 
-            onChange={v => {
-              setTechStackStr(v); // Update local visual state smoothly
-              setDraft(d => d ? { ...d, techStack: v.split(',').map(s => s.trim()).filter(Boolean) } : d); // Update payload array implicitly
-            }} 
+          <FormInput
+            label="Project Name"
+            value={draft.name}
+            placeholder="e.g. DevConnect"
+            error={errors.name}
+            onChange={(v) => {
+              setDraft((d) => (d ? { ...d, name: v } : d));
+              if (errors.name) setErrors(prev => ({ ...prev, name: undefined }));
+            }}
           />
         </div>
-        <FormSelect label="Role" value={draft.role} onChange={v => setDraft(d => d ? { ...d, role: v as Project['role'] } : d)} options={[{ id:1,label: 'Solo', value: 'Solo' }, { id:2,label: 'Lead', value: 'Lead' }, { id:3,label: 'Contributor', value: 'Contributor' }]} />
-        <FormSelect label="Status" value={draft.status} onChange={v => setDraft(d => d ? { ...d, status: v as Project['status'] } : d)} options={[{ id:1,label: 'In Progress', value: 'In Progress' }, { id:2,label: 'Live', value: 'Live' }, { id:3,label: 'Archived', value: 'Archived' }]} />
-        <FormInput label="GitHub URL" value={draft.githubUrl || ''} onChange={v => setDraft(d => d ? { ...d, githubUrl: v } : d)} />
-        <FormInput label="Live URL" value={draft.liveUrl || ''} onChange={v => setDraft(d => d ? { ...d, liveUrl: v } : d)} />
+        
+        <div className="col-span-2">
+          <FormTextarea
+            label="Description"
+            value={draft.description}
+            rows={2}
+            error={errors.description}
+            onChange={(v) => {
+              setDraft((d) => (d ? { ...d, description: v } : d));
+              if (errors.description) setErrors(prev => ({ ...prev, description: undefined }));
+            }}
+          />
+        </div>
+        
+        <div className="col-span-2">
+          <FormInput
+            label="Tech Stack (comma separated)"
+            value={techStackStr}
+            error={errors.techStack}
+            onChange={(v) => {
+              // Update local visual state smoothly so user can type freely
+              setTechStackStr(v);
+              
+              setDraft((d) =>
+                d ? {
+                      ...d,
+                      // BUG FIX 4: Clean the new data BEFORE it gets saved to the backend!
+                      techStack: v
+                        .split(",")
+                        .map((s) => s.replace(/[^a-zA-Z0-9\s.\-#+]/g, "").trim())
+                        .filter(Boolean),
+                    }
+                  : d
+              );
+              if (errors.techStack) setErrors(prev => ({ ...prev, techStack: undefined }));
+            }}
+          />
+        </div>
+        
+        <FormSelect
+          label="Role"
+          value={draft.role}
+          options={roles} // Assuming 'roles' is defined in your file
+          error={errors.role}
+          onChange={(v) => {
+            setDraft((d) => (d ? { ...d, role: v as Project["role"] } : d));
+            if (errors.role) setErrors(prev => ({ ...prev, role: undefined }));
+          }}
+        />
+        
+        <FormSelect
+          label="Status"
+          value={draft.status}
+          options={projectStatus} // Assuming 'projectStatus' is defined in your file
+          error={errors.status}
+          onChange={(v) => {
+            setDraft((d) => (d ? { ...d, status: v as Project["status"] } : d));
+            if (errors.status) setErrors(prev => ({ ...prev, status: undefined }));
+          }}
+        />
+        
+        <FormInput
+          label="GitHub URL"
+          value={draft.githubUrl || ""}
+          onChange={(v) => setDraft((d) => (d ? { ...d, githubUrl: v } : d))}
+        />
+        
+        <FormInput
+          label="Live URL"
+          value={draft.liveUrl || ""}
+          onChange={(v) => setDraft((d) => (d ? { ...d, liveUrl: v } : d))}
+        />
       </div>
     </EditModal>
   );

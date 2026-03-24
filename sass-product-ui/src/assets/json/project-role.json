@@ -1,0 +1,5 @@
+[
+    { "id": 1, "label": "Solo", "value": "Solo" },
+    { "id": 2, "label": "Lead", "value": "Lead" },
+    { "id": 3, "label": "Contributor", "value": "Contributor" }
+]
