@@ -25,8 +25,8 @@ export interface Project {
   name: string;
   description: string;
   techStack: string[];
-  role: 'Solo' | 'Lead' | 'Contributor';
-  status: 'Live' | 'In Progress' | 'Archived';
+  role: string;
+  status: string;
   githubUrl: string;
   liveUrl: string;
   lookingFor: string[];

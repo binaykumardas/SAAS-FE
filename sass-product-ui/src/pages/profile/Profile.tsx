@@ -88,7 +88,7 @@ const Profile = () => {
     
     if (tab === 'projects') {
       const existing = itemId ? safeData.projects.find(p => p.id === itemId) : null;
-      setProjectDraft(existing ? { ...existing } : { id: Date.now().toString(), name: '', description: '', techStack:[], role: 'Solo', status: 'In Progress', githubUrl: '', liveUrl: '', lookingFor:[] });
+      setProjectDraft(existing ? { ...existing } : { id: Date.now().toString(), name: '', description: '', techStack:[], role: '', status: '', githubUrl: '', liveUrl: '', lookingFor:[] });
     }
     if (tab === 'experience') {
       const existing = itemId ? safeData.experiences.find(e => e.id === itemId) : null;
