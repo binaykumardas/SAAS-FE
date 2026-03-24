@@ -15,6 +15,7 @@ import roles from '../../assets/json/project-role.json'
 import availability from '../../assets/json/avalibility.json'
 import workMode from '../../assets/json/work-mdoe.json'
 import employement from '../../assets/json/employement-type.json'
+import education from '../../assets/json/education-type.json'
 
 
 // ─────────────────────────────────────────────────────────────
@@ -743,18 +744,112 @@ export const EducationModal = ({
 }: {
   isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
   draft: Education; setDraft: React.Dispatch<React.SetStateAction<Education | null>>;
-}) => (
-  <EditModal title={draft.institution ? "Edit Education" : "Add Education"} isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
-    <div className="grid grid-cols-2 gap-4">
-      <div className="col-span-2"><FormInput label="Institution" value={draft.institution} onChange={v => setDraft(d => d ? { ...d, institution: v } : d)} /></div>
-      <FormInput label="Degree" value={draft.degree} onChange={v => setDraft(d => d ? { ...d, degree: v } : d)} />
-      <FormSelect label="Type" value={draft.type} onChange={v => setDraft(d => d ? { ...d, type: v } : d)} options={[{ id:1,label: 'Degree', value: 'Degree' }, { id:2,label: 'Certification', value: 'Certification' }, { id:3,label: 'Bootcamp', value: 'Bootcamp' }]} />
-      <FormInput label="Start Year" value={draft.startYear} onChange={v => setDraft(d => d ? { ...d, startYear: v } : d)} />
-      <FormInput label="End Year" value={draft.endYear} onChange={v => setDraft(d => d ? { ...d, endYear: v } : d)} />
-      <div className="col-span-2"><FormInput label="Link" value={draft.link || ''} onChange={v => setDraft(d => d ? { ...d, link: v } : d)} /></div>
-    </div>
-  </EditModal>
-);
+}) => {
+
+  const [errors, setErrors] = useState<{
+    institution?: string;
+    degree?: string;
+    type?: string;
+    startYear?: string;
+    endYear?: string;
+  }>({});
+
+  useEffect(() => {
+    if (isOpen) setErrors({});
+  }, [isOpen]);
+
+  const handleSave = () => {
+    const newErrors: typeof errors = {};
+
+    if (!draft.institution?.trim()) newErrors.institution = "This field is required.";
+    if (!draft.degree?.trim()) newErrors.degree = "This field is required.";
+    if (!draft.type) newErrors.type = "This field is required.";
+    if (!draft.startYear?.trim()) newErrors.startYear = "This field is required.";
+    if (!draft.endYear?.trim()) newErrors.endYear = "This field is required.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    onSave();
+  };
+
+  return (
+    <EditModal
+      title={draft.institution ? "Edit Education" : "Add Education"}
+      isOpen={isOpen}
+      onClose={onClose}
+      onSave={handleSave}
+      saving={saving}
+    >
+      <div className="grid grid-cols-2 gap-4">
+
+        <div className="col-span-2">
+          <FormInput
+            label="Institution"
+            value={draft.institution}
+            error={errors.institution}
+            onChange={v => {
+              setDraft(d => d ? { ...d, institution: v } : d);
+              if (errors.institution) setErrors(prev => ({ ...prev, institution: undefined }));
+            }}
+          />
+        </div>
+
+        <FormInput
+          label="Degree"
+          value={draft.degree}
+          error={errors.degree}
+          onChange={v => {
+            setDraft(d => d ? { ...d, degree: v } : d);
+            if (errors.degree) setErrors(prev => ({ ...prev, degree: undefined }));
+          }}
+        />
+
+        <FormSelect
+          label="Type"
+          value={draft.type}
+          error={errors.type}
+          onChange={v => {
+            setDraft(d => d ? { ...d, type: v } : d);
+            if (errors.type) setErrors(prev => ({ ...prev, type: undefined }));
+          }}
+          options={education}
+        />
+
+        <FormInput
+          label="Start Year"
+          value={draft.startYear}
+          error={errors.startYear}
+          onChange={v => {
+            setDraft(d => d ? { ...d, startYear: v } : d);
+            if (errors.startYear) setErrors(prev => ({ ...prev, startYear: undefined }));
+          }}
+        />
+
+        <FormInput
+          label="End Year"
+          value={draft.endYear}
+          error={errors.endYear}
+          onChange={v => {
+            setDraft(d => d ? { ...d, endYear: v } : d);
+            if (errors.endYear) setErrors(prev => ({ ...prev, endYear: undefined }));
+          }}
+        />
+
+        <div className="col-span-2">
+          <FormInput
+            label="Institution Link"
+            value={draft.link || ''}
+            onChange={v => setDraft(d => d ? { ...d, link: v } : d)}
+          />
+        </div>
+
+      </div>
+    </EditModal>
+  );
+};
 
 // ─────────────────────────────────────────────────────────────
 // COMPONENT 7 — AchievementsModal
@@ -764,14 +859,104 @@ export const AchievementsModal = ({
 }: {
   isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
   draft: Achievement; setDraft: React.Dispatch<React.SetStateAction<Achievement | null>>;
-}) => (
-  <EditModal title={draft.title ? "Edit Achievement" : "Add Achievement"} isOpen={isOpen} onClose={onClose} onSave={onSave} saving={saving}>
-    <div className="grid grid-cols-2 gap-4">
-      <div className="col-span-2"><FormInput label="Title" value={draft.title} onChange={v => setDraft(d => d ? { ...d, title: v } : d)} /></div>
-      <FormSelect label="Type" value={draft.type} onChange={v => setDraft(d => d ? { ...d, type: v } : d)} options={[{ id:1,label: 'Hackathon', value: 'Hackathon' }, { id:2,label: 'Award', value: 'Award' }, { id:3,label: 'Publication', value: 'Publication' }]} />
-      <FormInput label="Date" value={draft.date} onChange={v => setDraft(d => d ? { ...d, date: v } : d)} />
-      <div className="col-span-2"><FormTextarea label="Description" value={draft.description} rows={3} onChange={v => setDraft(d => d ? { ...d, description: v } : d)} /></div>
-      <div className="col-span-2"><FormInput label="Link" value={draft.link || ''} onChange={v => setDraft(d => d ? { ...d, link: v } : d)} /></div>
-    </div>
-  </EditModal>
-);
+}) => {
+
+  const [errors, setErrors] = useState<{
+    title?: string;
+    type?: string;
+    date?: string;
+    description?: string;
+  }>({});
+
+  useEffect(() => {
+    if (isOpen) setErrors({});
+  }, [isOpen]);
+
+  const handleSave = () => {
+    const newErrors: typeof errors = {};
+
+    if (!draft.title?.trim()) newErrors.title = "This field is required.";
+    if (!draft.type) newErrors.type = "This field is required.";
+    if (!draft.date?.trim()) newErrors.date = "This field is required.";
+    if (!draft.description?.trim()) newErrors.description = "This field is required.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    onSave();
+  };
+
+  return (
+    <EditModal
+      title={draft.title ? "Edit Achievement" : "Add Achievement"}
+      isOpen={isOpen}
+      onClose={onClose}
+      onSave={handleSave}
+      saving={saving}
+    >
+      <div className="grid grid-cols-2 gap-4">
+
+        <div className="col-span-2">
+          <FormInput
+            label="Title"
+            value={draft.title}
+            error={errors.title}
+            onChange={v => {
+              setDraft(d => d ? { ...d, title: v } : d);
+              if (errors.title) setErrors(prev => ({ ...prev, title: undefined }));
+            }}
+          />
+        </div>
+
+        <FormSelect
+          label="Type"
+          value={draft.type}
+          error={errors.type}
+          onChange={v => {
+            setDraft(d => d ? { ...d, type: v } : d);
+            if (errors.type) setErrors(prev => ({ ...prev, type: undefined }));
+          }}
+          options={[
+            { id: 1, label: 'Hackathon', value: 'Hackathon' },
+            { id: 2, label: 'Award', value: 'Award' },
+            { id: 3, label: 'Publication', value: 'Publication' },
+          ]}
+        />
+
+        <FormInput
+          label="Date"
+          value={draft.date}
+          error={errors.date}
+          onChange={v => {
+            setDraft(d => d ? { ...d, date: v } : d);
+            if (errors.date) setErrors(prev => ({ ...prev, date: undefined }));
+          }}
+        />
+
+        <div className="col-span-2">
+          <FormTextarea
+            label="Description"
+            value={draft.description}
+            rows={3}
+            error={errors.description}
+            onChange={v => {
+              setDraft(d => d ? { ...d, description: v } : d);
+              if (errors.description) setErrors(prev => ({ ...prev, description: undefined }));
+            }}
+          />
+        </div>
+
+        <div className="col-span-2">
+          <FormInput
+            label="Link"
+            value={draft.link || ''}
+            onChange={v => setDraft(d => d ? { ...d, link: v } : d)}
+          />
+        </div>
+
+      </div>
+    </EditModal>
+  );
+};
