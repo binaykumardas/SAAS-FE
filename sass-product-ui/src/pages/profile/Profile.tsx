@@ -33,7 +33,7 @@ const TABS: { key: TabKey; label: string }[] =[
   { key: 'achievements', label: 'Achievements' },
 ];
 
-const DEFAULT_BASIC: BasicDetails = { firstName: '', lastName: '', mobile: '', gender: 'MALE', devType: 'FRONTEND_DEVELOPER', dateOfBirth: '', email: '', aboutMe: '' };
+const DEFAULT_BASIC: BasicDetails = { firstName: '', lastName: '', mobile: '', gender: '', devType: '', dateOfBirth: '', email: '', aboutMe: '' };
 const DEFAULT_COLLAB: Collaboration = { pitch: '', projectTypes: [], lookingFor:[], availability: 'Full-time', workStyle: 'Remote', timezone: '' };
 
 const LoadingSkeleton = () => (

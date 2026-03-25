@@ -1,121 +1,98 @@
-{
-  "basicDetails": {
-    "firstName":     "Binay",
-    "lastName":      "Das",
-    "mobile":        "9967564321",
-    "gender":        "MALE",
-    "devType":      "FRONTEND DEVELOPER",
-    "dateOfBirth":   "2004-06-05",
-    "aboutMe":       "Software engineer with a passion for technology and travel. Looking to build great products with great people.",
-    "email":         "binay@email.com"
+[
+  {
+    "id": 1,
+    "name": "Aryan Mehta",
+    "role": "Full Stack Developer",
+    "mutual": 12,
+    "location": "Mumbai, India",
+    "skills": ["React", "Node.js", "MongoDB"],
+    "connected": false,
+    "pending": false,
+    "initials": "AM",
+    "color": "#2563EB"
   },
-
-  "skills": [
-    { "id": "1", "name": "TypeScript", "level": "Expert",       "category": "Language" },
-    { "id": "2", "name": "Python",     "level": "Intermediate", "category": "Language" },
-    { "id": "3", "name": "React",      "level": "Expert",       "category": "Frontend" },
-    { "id": "4", "name": "Next.js",    "level": "Intermediate", "category": "Frontend" },
-    { "id": "5", "name": "Tailwind",   "level": "Expert",       "category": "Frontend" },
-    { "id": "6", "name": "Node.js",    "level": "Intermediate", "category": "Backend"  },
-    { "id": "7", "name": "Express",    "level": "Intermediate", "category": "Backend"  },
-    { "id": "8", "name": "PostgreSQL", "level": "Intermediate", "category": "Database" },
-    { "id": "9", "name": "MongoDB",    "level": "Beginner",     "category": "Database" },
-    { "id": "10","name": "Docker",     "level": "Beginner",     "category": "DevOps"   },
-    { "id": "11","name": "Git",        "level": "Expert",       "category": "Tool"     }
-  ],
-
-  "projects": [
-    {
-      "id":          "1",
-      "name":        "DevConnect",
-      "description": "A platform for developers to find collaborators and build projects together.",
-      "techStack":   ["React", "TypeScript", "Node.js", "PostgreSQL"],
-      "role":        "Lead",
-      "status":      "In Progress",
-      "githubUrl":   "github.com/binaydas/devconnect",
-      "liveUrl":     "",
-      "lookingFor":  ["Backend Dev", "Designer"]
-    },
-    {
-      "id":          "2",
-      "name":        "CodeReview AI",
-      "description": "AI-powered code review tool that provides instant feedback on pull requests.",
-      "techStack":   ["Python", "FastAPI", "React", "OpenAI"],
-      "role":        "Solo",
-      "status":      "Live",
-      "githubUrl":   "github.com/binaydas/codereview-ai",
-      "liveUrl":     "codereviewai.dev",
-      "lookingFor":  []
-    }
-  ],
-
-  "experiences": [
-    {
-      "id":          "1",
-      "company":     "TechCorp",
-      "role":        "Frontend Developer",
-      "type":        "Full-time",
-      "startDate":   "Jan 2023",
-      "endDate":     "",
-      "description": "Built scalable React applications and led the migration to TypeScript across the frontend codebase."
-    },
-    {
-      "id":          "2",
-      "company":     "StartupXYZ",
-      "role":        "React Developer Intern",
-      "type":        "Internship",
-      "startDate":   "Jun 2022",
-      "endDate":     "Dec 2022",
-      "description": "Developed new features for a SaaS dashboard and improved performance by 40%."
-    }
-  ],
-
-  "educations": [
-    {
-      "id":          "1",
-      "institution": "KIIT University",
-      "degree":      "B.Tech Computer Science",
-      "startYear":   "2020",
-      "endYear":     "2024",
-      "type":        "Degree",
-      "link":        ""
-    },
-    {
-      "id":          "2",
-      "institution": "Meta",
-      "degree":      "React Developer Certificate",
-      "startYear":   "2022",
-      "endYear":     "2022",
-      "type":        "Certification",
-      "link":        "coursera.org/certificate/meta-react"
-    }
-  ],
-
-  "collaboration": {
-    "projectTypes": ["SaaS", "Open Source", "Developer Tools"],
-    "lookingFor":   ["Co-founder", "Designer", "Backend Dev"],
-    "availability": "Part-time",
-    "workStyle":    "Remote",
-    "timezone":     "IST (UTC+5:30)",
-    "pitch":        "I want to build developer tools that make collaboration easier. Looking for a designer or backend developer to partner with on an early-stage SaaS."
+  {
+    "id": 2,
+    "name": "Sneha Rao",
+    "role": "UI/UX Designer",
+    "mutual": 8,
+    "location": "Bangalore, India",
+    "skills": ["Figma", "Tailwind", "Framer"],
+    "connected": false,
+    "pending": false,
+    "initials": "SR",
+    "color": "#7C3AED"
   },
-
-  "achievements": [
-    {
-      "id":          "1",
-      "title":       "HackIndia 2023 — 2nd Place",
-      "type":        "Hackathon",
-      "description": "Built an AI-powered code review tool in 24 hours. Competed against 200+ teams.",
-      "date":        "2023-08-15",
-      "link":        "hackindia.com/2023"
-    },
-    {
-      "id":          "2",
-      "title":       "Open Source Contributor — React Query",
-      "type":        "Open Source",
-      "description": "Contributed bug fixes and documentation improvements to TanStack Query.",
-      "date":        "2023-03-10",
-      "link":        "github.com/TanStack/query/pulls"
-    }
-  ]
-}
+  {
+    "id": 3,
+    "name": "Dev Patel",
+    "role": "Backend Engineer",
+    "mutual": 5,
+    "location": "Ahmedabad, India",
+    "skills": ["Django", "Python", "PostgreSQL"],
+    "connected": true,
+    "pending": false,
+    "initials": "DP",
+    "color": "#059669"
+  },
+  {
+    "id": 4,
+    "name": "Ritika Singh",
+    "role": "Mobile Developer",
+    "mutual": 14,
+    "location": "Delhi, India",
+    "skills": ["Flutter", "Dart", "Firebase"],
+    "connected": false,
+    "pending": false,
+    "initials": "RS",
+    "color": "#DC2626"
+  },
+  {
+    "id": 5,
+    "name": "Karan Joshi",
+    "role": "DevOps Engineer",
+    "mutual": 3,
+    "location": "Pune, India",
+    "skills": ["Docker", "AWS", "K8s"],
+    "connected": false,
+    "pending": false,
+    "initials": "KJ",
+    "color": "#D97706"
+  },
+  {
+    "id": 6,
+    "name": "Preethi Nair",
+    "role": "Data Scientist",
+    "mutual": 9,
+    "location": "Chennai, India",
+    "skills": ["Python", "TensorFlow", "SQL"],
+    "connected": false,
+    "pending": false,
+    "initials": "PN",
+    "color": "#0891B2"
+  },
+  {
+    "id": 7,
+    "name": "Nikhil Verma",
+    "role": "Frontend Developer",
+    "mutual": 6,
+    "location": "Hyderabad, India",
+    "skills": ["Vue.js", "TypeScript", "GraphQL"],
+    "connected": false,
+    "pending": false,
+    "initials": "NV",
+    "color": "#7C3AED"
+  },
+  {
+    "id": 8,
+    "name": "Ananya Sharma",
+    "role": "Product Manager",
+    "mutual": 11,
+    "location": "Kolkata, India",
+    "skills": ["Agile", "Jira", "Analytics"],
+    "connected": true,
+    "pending": false,
+    "initials": "AS",
+    "color": "#DB2777"
+  }
+]

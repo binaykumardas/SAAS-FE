@@ -61,7 +61,7 @@ export const updateBasicDetails = async (data: BasicDetails): Promise<BasicDetai
     firstName: data.firstName,
     lastName: data.lastName,
     phoneNumber: data.mobile,
-    devType: data.devType,
+    role: data.devType,
     dateOfBirth: data.dateOfBirth,
     gender: data.gender,
     aboutMe: data.aboutMe

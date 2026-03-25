@@ -9,6 +9,7 @@ import Profile from './pages/profile/Profile';
 // Components
 import Header from './components/Header';
 import Footer from './components/Footer';
+import FindConnections from './pages/connection/findConnection';
 
 /**
  * ── Main Layout ──────────────────────────────────────────
@@ -45,6 +46,7 @@ const App = () => {
       {/* Any route nested inside here gets the Header and Footer */}
       <Route element={<MainLayout />}>
         <Route path="/profile" element={<Profile />} />
+        <Route path="/find-connection" element={<FindConnections />} />
         {/* <Route path="/projects" element={<Projects />} /> */}
         {/* <Route path="/dashboard" element={<Dashboard />} /> */}
       </Route>

@@ -33,7 +33,7 @@ const Header = () => {
   const navLinks =[
     { name: 'Home', path: '/' },
     { name: 'My Profile', path: '/profile' },
-    { name: 'Find Mates', path: '/mates' },
+    { name: 'Find Mates', path: '/find-connection' },
   ];
 
   return (
