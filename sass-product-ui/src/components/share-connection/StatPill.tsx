@@ -23,7 +23,7 @@ const StatPill = ({ status, label, count, isActive, onClick }: StatPillProps): R
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-[7px] px-[13px] py-[6px] border rounded-full shadow-card text-[13px] cursor-pointer font-sans transition-all duration-150 ${
+      className={`flex items-center gap-1.75 px-3.25 py-1.5 border rounded-full shadow-card text-[13px] cursor-pointer font-sans transition-all duration-150 ${
         isActive
           ? PILL_ACTIVE_CLASS[status]
           : "bg-surface border-border hover:bg-raised hover:border-border-strong"
