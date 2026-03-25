@@ -46,38 +46,38 @@ export const BasicModal = ({
     <div className="grid grid-cols-2 gap-4">
       <FormInput
         label="First Name"
-        value={draft.firstName}
+        value={draft.firstName || ""}
         placeholder="First name"
         onChange={(v) => setDraft((d) => (d ? { ...d, firstName: v } : d))}
       />
       <FormInput
         label="Last Name"
-        value={draft.lastName}
+        value={draft.lastName || ""}
         placeholder="Last name"
         onChange={(v) => setDraft((d) => (d ? { ...d, lastName: v } : d))}
       />
       <FormInput
         label="Phone Number"
         type="tel"
-        value={draft.mobile}
+        value={draft.mobile || ""}
         placeholder="Phone number"
         onChange={(v) => setDraft((d) => (d ? { ...d, mobile: v } : d))}
       />
       <FormSelect
         label="Dev Type"
-        value={draft.devType}
+        value={draft.devType || ""} // FIXED: fallback to empty string
         onChange={(v) => setDraft((d) => (d ? { ...d, devType: v } : d))}
-        options={skillList}
+        options={skillList} // NOTE: Make sure skillList is the correct JSON for dev roles, otherwise it shows skills here!
       />
       <FormInput
         label="Date of Birth"
         type="date"
-        value={draft.dateOfBirth}
+        value={draft.dateOfBirth || ""}
         onChange={(v) => setDraft((d) => (d ? { ...d, dateOfBirth: v } : d))}
       />
       <FormSelect
         label="Gender"
-        value={draft.gender}
+        value={draft.gender || ""} // FIXED: fallback to empty string
         onChange={(v) => setDraft((d) => (d ? { ...d, gender: v } : d))}
         options={genderList}
       />
@@ -85,7 +85,7 @@ export const BasicModal = ({
         <FormInput
           label="Email Address"
           type="email"
-          value={draft.email}
+          value={draft.email || ""}
           placeholder="email@example.com"
           onChange={(v) => setDraft((d) => (d ? { ...d, email: v } : d))}
         />
@@ -93,7 +93,7 @@ export const BasicModal = ({
       <div className="col-span-2">
         <FormTextarea
           label="About Me"
-          value={draft.aboutMe}
+          value={draft.aboutMe || ""}
           rows={3}
           placeholder="Tell us about yourself..."
           onChange={(v) => setDraft((d) => (d ? { ...d, aboutMe: v } : d))}
@@ -130,7 +130,7 @@ export const CollaborateModal = ({
           .filter(Boolean);
       }
     }
-    if (!Array.isArray(arr)) return [];
+    if (!Array.isArray(arr)) return[];
     return arr
       .map(t => (typeof t === 'string' ? t.replace(/[^a-zA-Z\s-]/g, '').trim() : ''))
       .filter(Boolean);
@@ -145,7 +145,7 @@ export const CollaborateModal = ({
     cleanArray(draft.lookingFor).join(', ')
   );
 
-  const [errors, setErrors] = useState<{
+  const[errors, setErrors] = useState<{
     pitch?: string;
     projectTypes?: string;
     lookingFor?: string;
@@ -191,7 +191,7 @@ export const CollaborateModal = ({
         <div className="col-span-2">
           <FormTextarea
             label="My Pitch"
-            value={draft.pitch}
+            value={draft.pitch || ""}
             rows={3}
             placeholder="What do you want to build?"
             error={errors.pitch}
@@ -236,7 +236,7 @@ export const CollaborateModal = ({
 
         <FormSelect
           label="Availability"
-          value={draft.availability}
+          value={draft.availability || ""} // FIXED: fallback to empty string
           error={errors.availability}
           onChange={v => {
             setDraft(d => d ? { ...d, availability: v } : d);
@@ -247,7 +247,7 @@ export const CollaborateModal = ({
 
         <FormSelect
           label="Work Style"
-          value={draft.workStyle}
+          value={draft.workStyle || ""} // FIXED: fallback to empty string
           error={errors.workStyle}
           onChange={v => {
             setDraft(d => d ? { ...d, workStyle: v } : d);
@@ -258,7 +258,7 @@ export const CollaborateModal = ({
 
         <FormInput
           label="Time Zone"
-          value={draft.timezone}
+          value={draft.timezone || ""}
           placeholder="e.g. IST (UTC+5:30)"
           onChange={v => setDraft(d => d ? { ...d, timezone: v } : d)}
         />
@@ -279,14 +279,13 @@ export const SkillsModal = ({
   isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
   draft: Skill[]; setDraft: React.Dispatch<React.SetStateAction<Skill[] | null>>;
 }) => {
-  const [skillName, setSkillName] = useState('');
-  const[category, setCategory] = useState('');
-  const [level, setLevel] = useState<SkillLevel | ''>('');
+  const[skillName, setSkillName] = useState('');
+  const [category, setCategory] = useState('');
+  const[level, setLevel] = useState<SkillLevel | ''>('');
   
   const [errors, setErrors] = useState<{ category?: string; skillName?: string; level?: string }>({});
 
-  // NEW: Tracks if the user successfully added a new skill during this modal session
-  const [hasAddedNewSkill, setHasAddedNewSkill] = useState(false);
+  const[hasAddedNewSkill, setHasAddedNewSkill] = useState(false);
 
   const LEVELS =[
     { id: 1, label: 'Expert', value: 'Expert' }, 
@@ -301,7 +300,6 @@ export const SkillsModal = ({
     if (!skillName.trim()) newErrors.skillName = "This field is required";
     if (!level) newErrors.level = "This field is required";
 
-    // Only check for duplicates if the user actually typed a skill name
     if (skillName.trim()) {
       const isDuplicate = draft?.some(
         s => (s?.name || '').toLowerCase() === skillName.trim().toLowerCase()
@@ -310,11 +308,11 @@ export const SkillsModal = ({
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // true = valid, false = invalid
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleAddSkill = () => {
-    if (!validateSkillForm()) return; // Blocks adding if validation fails
+    if (!validateSkillForm()) return; 
   
     const newSkill: Skill = {
       id: Date.now().toString(),
@@ -325,13 +323,11 @@ export const SkillsModal = ({
   
     setDraft(prev => prev ? [...prev, newSkill] : [newSkill]);
   
-    // Clear inputs upon successful add
     setSkillName('');
     setCategory('');
     setLevel('');
     setErrors({});
 
-    // MARK AS SUCCESSFUL: The user fulfilled the requirement of adding a new skill!
     setHasAddedNewSkill(true);
   };
 
@@ -342,24 +338,19 @@ export const SkillsModal = ({
   const getNormalizedLevel = (skill: Skill): SkillLevel => (skill.level || skill.proficiency || 'Beginner') as SkillLevel;
 
   const handleSave = () => {
-      // Check if user typed anything but forgot to click the "Add" button
       const hasPendingInput = skillName.trim() !== '' || category !== '' || level !== '';
 
-      // REQUIREMENT 1 & 2: If they have old data but didn't add a NEW skill, 
-      // OR if they have pending text/validation errors showing.
       if (!hasAddedNewSkill || hasPendingInput) {
-        validateSkillForm(); // Force the inputs to turn red to show they are required
-        alert("Please add any one skill."); // Show exact requested message
-        return; // Block save, keep modal open
+        validateSkillForm();
+        alert("Please add any one skill."); 
+        return;
       }
 
-      // Safety Check: Prevent saving if the draft is entirely empty
       if (!draft || draft.length === 0) {
         alert("Please add any one skill.");
         return;
       }
 
-      // REQUIREMENT 3: Successfully added a skill, no validation errors -> Save & Close
       onSave(); 
   };
 
@@ -368,7 +359,7 @@ export const SkillsModal = ({
       title="Add Skills & Technologies"
       isOpen={isOpen}
       onClose={onClose}
-      onSave={handleSave} // Connected to our new robust save logic
+      onSave={handleSave} 
       saving={saving}
     >
       <div className="flex flex-col gap-6">
@@ -377,7 +368,7 @@ export const SkillsModal = ({
           <div className="md:col-span-4">
             <FormSelect
               label="Category"
-              value={category}
+              value={category || ""} // State defaults to '' so this matches perfectly
               onChange={(val) => {
                 setCategory(val);
                 if (errors.category) setErrors(prev => ({ ...prev, category: undefined })); 
@@ -403,7 +394,7 @@ export const SkillsModal = ({
           <div className="md:col-span-3">
             <FormSelect
               label="Proficiency"
-              value={level}
+              value={level || ""} // State defaults to '' so this matches perfectly
               onChange={(val) => {
                 setLevel(val as SkillLevel);
                 if (errors.level) setErrors(prev => ({ ...prev, level: undefined })); 
@@ -464,21 +455,11 @@ export const SkillsModal = ({
 // ─────────────────────────────────────────────────────────────
 
 export const ProjectsModal = ({
-  isOpen,
-  onClose,
-  onSave,
-  saving = false,
-  draft,
-  setDraft,
+  isOpen, onClose, onSave, saving = false, draft, setDraft,
 }: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: () => void;
-  saving?: boolean;
-  draft: Project;
-  setDraft: React.Dispatch<React.SetStateAction<Project | null>>;
+  isOpen: boolean; onClose: () => void; onSave: () => void; saving?: boolean;
+  draft: Project; setDraft: React.Dispatch<React.SetStateAction<Project | null>>;
 }) => {
-  // It only keeps letters, numbers, spaces, dots, hyphens, plus, and hash (for HTML5, Node.js, C++)
   const cleanTechStack = (stack: string[]) => {
     if (!stack || !Array.isArray(stack)) return[];
     return stack
@@ -489,11 +470,7 @@ export const ProjectsModal = ({
   const[techStackStr, setTechStackStr] = useState(cleanTechStack(draft.techStack).join(", "));
   
   const [errors, setErrors] = useState<{
-    name?: string;
-    description?: string;
-    techStack?: string;
-    role?: string;
-    status?: string;
+    name?: string; description?: string; techStack?: string; role?: string; status?: string;
   }>({});
 
   useEffect(() => {
@@ -502,16 +479,10 @@ export const ProjectsModal = ({
   }, [draft.id, isOpen]);
 
   const handleSave = () => {
-    const newErrors: {
-      name?: string;
-      description?: string;
-      techStack?: string;
-      role?: string;
-      status?: string;
-    } = {};
+    const newErrors: typeof errors = {};
 
-    if (!draft.name.trim()) newErrors.name = "This field is required.";
-    if (!draft.description.trim()) newErrors.description = "This field is required.";
+    if (!draft.name?.trim()) newErrors.name = "This field is required.";
+    if (!draft.description?.trim()) newErrors.description = "This field is required.";
     if (!techStackStr.trim()) newErrors.techStack = "This field is required.";
     if (!draft.role) newErrors.role = "This field is required.";
     if (!draft.status) newErrors.status = "This field is required.";
@@ -536,7 +507,7 @@ export const ProjectsModal = ({
         <div className="col-span-2">
           <FormInput
             label="Project Name"
-            value={draft.name}
+            value={draft.name || ""}
             placeholder="e.g. DevConnect"
             error={errors.name}
             onChange={(v) => {
@@ -549,7 +520,7 @@ export const ProjectsModal = ({
         <div className="col-span-2">
           <FormTextarea
             label="Description"
-            value={draft.description}
+            value={draft.description || ""}
             rows={2}
             error={errors.description}
             onChange={(v) => {
@@ -565,13 +536,10 @@ export const ProjectsModal = ({
             value={techStackStr}
             error={errors.techStack}
             onChange={(v) => {
-              // Update local visual state smoothly so user can type freely
               setTechStackStr(v);
-              
               setDraft((d) =>
                 d ? {
                       ...d,
-                      // BUG FIX 4: Clean the new data BEFORE it gets saved to the backend!
                       techStack: v
                         .split(",")
                         .map((s) => s.replace(/[^a-zA-Z0-9\s.\-#+]/g, "").trim())
@@ -586,8 +554,8 @@ export const ProjectsModal = ({
         
         <FormSelect
           label="Role"
-          value={draft.role}
-          options={roles} // Assuming 'roles' is defined in your file
+          value={draft.role || ""} // FIXED: fallback to empty string
+          options={roles} 
           error={errors.role}
           onChange={(v) => {
             setDraft((d) => (d ? { ...d, role: v as Project["role"] } : d));
@@ -597,8 +565,8 @@ export const ProjectsModal = ({
         
         <FormSelect
           label="Status"
-          value={draft.status}
-          options={projectStatus} // Assuming 'projectStatus' is defined in your file
+          value={draft.status || ""} // FIXED: fallback to empty string
+          options={projectStatus} 
           error={errors.status}
           onChange={(v) => {
             setDraft((d) => (d ? { ...d, status: v as Project["status"] } : d));
@@ -632,11 +600,8 @@ export const ExperienceModal = ({
   draft: Experience; setDraft: React.Dispatch<React.SetStateAction<Experience | null>>;
 }) => {
 
-  const [errors, setErrors] = useState<{
-    company?: string;
-    role?: string;
-    type?: string;
-    startDate?: string;
+  const[errors, setErrors] = useState<{
+    company?: string; role?: string; type?: string; startDate?: string;
   }>({});
 
   useEffect(() => {
@@ -671,7 +636,7 @@ export const ExperienceModal = ({
 
         <FormInput
           label="Company Name"
-          value={draft.company}
+          value={draft.company || ""}
           placeholder="e.g. TechCorp"
           error={errors.company}
           onChange={v => {
@@ -682,7 +647,7 @@ export const ExperienceModal = ({
 
         <FormInput
           label="Job Title / Role"
-          value={draft.role}
+          value={draft.role || ""}
           placeholder="e.g. Frontend Developer"
           error={errors.role}
           onChange={v => {
@@ -694,7 +659,7 @@ export const ExperienceModal = ({
         <div className="col-span-2">
           <FormSelect
             label="Employment Type"
-            value={draft.type}
+            value={draft.type || ""} // FIXED: fallback to empty string
             error={errors.type}
             onChange={v => {
               setDraft(d => d ? { ...d, type: v } : d);
@@ -706,7 +671,7 @@ export const ExperienceModal = ({
 
         <FormInput
           label="Start Date"
-          value={draft.startDate}
+          value={draft.startDate || ""}
           placeholder="Jan 2023"
           error={errors.startDate}
           onChange={v => {
@@ -717,7 +682,7 @@ export const ExperienceModal = ({
 
         <FormInput
           label="End Date"
-          value={draft.endDate}
+          value={draft.endDate || ""}
           placeholder="Present"
           onChange={v => setDraft(d => d ? { ...d, endDate: v } : d)}
         />
@@ -725,7 +690,7 @@ export const ExperienceModal = ({
         <div className="col-span-2">
           <FormTextarea
             label="Description"
-            value={draft.description}
+            value={draft.description || ""}
             rows={3}
             onChange={v => setDraft(d => d ? { ...d, description: v } : d)}
           />
@@ -747,11 +712,7 @@ export const EducationModal = ({
 }) => {
 
   const [errors, setErrors] = useState<{
-    institution?: string;
-    degree?: string;
-    type?: string;
-    startYear?: string;
-    endYear?: string;
+    institution?: string; degree?: string; type?: string; startYear?: string; endYear?: string;
   }>({});
 
   useEffect(() => {
@@ -788,7 +749,7 @@ export const EducationModal = ({
         <div className="col-span-2">
           <FormInput
             label="Institution"
-            value={draft.institution}
+            value={draft.institution || ""}
             error={errors.institution}
             onChange={v => {
               setDraft(d => d ? { ...d, institution: v } : d);
@@ -799,7 +760,7 @@ export const EducationModal = ({
 
         <FormInput
           label="Degree"
-          value={draft.degree}
+          value={draft.degree || ""}
           error={errors.degree}
           onChange={v => {
             setDraft(d => d ? { ...d, degree: v } : d);
@@ -809,7 +770,7 @@ export const EducationModal = ({
 
         <FormSelect
           label="Type"
-          value={draft.type}
+          value={draft.type || ""} // FIXED: fallback to empty string
           error={errors.type}
           onChange={v => {
             setDraft(d => d ? { ...d, type: v } : d);
@@ -820,7 +781,7 @@ export const EducationModal = ({
 
         <FormInput
           label="Start Year"
-          value={draft.startYear}
+          value={draft.startYear || ""}
           error={errors.startYear}
           onChange={v => {
             setDraft(d => d ? { ...d, startYear: v } : d);
@@ -830,7 +791,7 @@ export const EducationModal = ({
 
         <FormInput
           label="End Year"
-          value={draft.endYear}
+          value={draft.endYear || ""}
           error={errors.endYear}
           onChange={v => {
             setDraft(d => d ? { ...d, endYear: v } : d);
@@ -862,10 +823,7 @@ export const AchievementsModal = ({
 }) => {
 
   const [errors, setErrors] = useState<{
-    title?: string;
-    type?: string;
-    date?: string;
-    description?: string;
+    title?: string; type?: string; date?: string; description?: string;
   }>({});
 
   useEffect(() => {
@@ -901,7 +859,7 @@ export const AchievementsModal = ({
         <div className="col-span-2">
           <FormInput
             label="Title"
-            value={draft.title}
+            value={draft.title || ""}
             error={errors.title}
             onChange={v => {
               setDraft(d => d ? { ...d, title: v } : d);
@@ -912,7 +870,7 @@ export const AchievementsModal = ({
 
         <FormSelect
           label="Type"
-          value={draft.type}
+          value={draft.type || ""} // FIXED: fallback to empty string
           error={errors.type}
           onChange={v => {
             setDraft(d => d ? { ...d, type: v } : d);
@@ -927,7 +885,7 @@ export const AchievementsModal = ({
 
         <FormInput
           label="Date"
-          value={draft.date}
+          value={draft.date || ""}
           error={errors.date}
           onChange={v => {
             setDraft(d => d ? { ...d, date: v } : d);
@@ -938,7 +896,7 @@ export const AchievementsModal = ({
         <div className="col-span-2">
           <FormTextarea
             label="Description"
-            value={draft.description}
+            value={draft.description || ""}
             rows={3}
             error={errors.description}
             onChange={v => {

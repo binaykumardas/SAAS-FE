@@ -27,14 +27,17 @@ export const formatLabel = (val: string) =>
   val ? val.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—';
 
 const TABS: { key: TabKey; label: string }[] =[
-  { key: 'basic', label: 'Basic' }, { key: 'skills', label: 'Skills' },
-  { key: 'projects', label: 'Projects' }, { key: 'collaborate', label: 'Collaborate' },
-  { key: 'experience', label: 'Experience' }, { key: 'education', label: 'Education' },
+  { key: 'basic', label: 'Basic' }, 
+  { key: 'skills', label: 'Skills' },
+  { key: 'projects', label: 'Projects' }, 
+  { key: 'collaborate', label: 'Collaborate' },
+  { key: 'experience', label: 'Experience' }, 
+  { key: 'education', label: 'Education' },
   { key: 'achievements', label: 'Achievements' },
 ];
 
 const DEFAULT_BASIC: BasicDetails = { firstName: '', lastName: '', mobile: '', gender: '', devType: '', dateOfBirth: '', email: '', aboutMe: '' };
-const DEFAULT_COLLAB: Collaboration = { pitch: '', projectTypes: [], lookingFor:[], availability: 'Full-time', workStyle: 'Remote', timezone: '' };
+const DEFAULT_COLLAB: Collaboration = { pitch: '', projectTypes: [], lookingFor:[], availability: '', workStyle: '', timezone: '' };
 
 const LoadingSkeleton = () => (
   <div className="min-h-screen bg-bg flex items-center justify-center">
