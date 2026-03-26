@@ -2,6 +2,7 @@
 import { DetailField, SectionCard, SkillChip, Tag, StatusBadge, EmptyState, ListHeader } from './ProfileUI';
 import type { BasicDetails, Skill, Project, Experience, Education, Collaboration, Achievement, SkillLevel } from '../../shared/model/profile';
 import skillList from '../../assets/json/skills.json'
+import { formatDate } from '../../pages/profile/Profile';
 
 
 const Developer = (data: number | string) => {
@@ -172,7 +173,7 @@ export const ExperienceTab = ({ experiences, onAdd, onEdit }: { experiences: Exp
   );
 };
 
-export const EducationTab = ({ educations, onAdd, onEdit }: { educations: Education[]; onAdd: () => void; onEdit: (id: string) => void; }) => {
+export const EducationTab = ({ educations, onAdd }: { educations: Education[]; onAdd: () => void; }) => {
   if (!educations || educations.length === 0) return <EmptyState icon="🎓" title="No education added" description="Add your degrees or certifications." actionLabel="+ Add Education" onAction={onAdd} />;
   return (
     <div className="flex flex-col gap-4">
@@ -181,9 +182,8 @@ export const EducationTab = ({ educations, onAdd, onEdit }: { educations: Educat
         <div key={edu.id} className="bg-surface border border-border rounded-2xl p-5 shadow-card">
           <div className="flex items-start justify-between mb-1">
             <div><h3 className="text-sm font-bold text-text">{edu?.degree || 'Degree'}</h3><p className="text-xs text-accent font-semibold mt-0.5">{edu?.institution || 'Institution'}</p></div>
-            <div className="flex items-center gap-3"><EditIconButton onClick={() => onEdit(edu.id)} /></div>
           </div>
-          <p className="text-xs text-muted">{edu?.startYear} — {edu?.endYear}</p>
+          <p className="text-xs text-muted">{formatDate(edu?.startYear)} — {formatDate(edu?.endYear)}</p>
         </div>
       ))}
     </div>
