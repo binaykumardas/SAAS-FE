@@ -781,6 +781,7 @@ export const EducationModal = ({
 
         <FormInput
           label="Start Year"
+          type="date"
           value={draft.startYear || ""}
           error={errors.startYear}
           onChange={v => {
@@ -791,6 +792,7 @@ export const EducationModal = ({
 
         <FormInput
           label="End Year"
+          type="date"
           value={draft.endYear || ""}
           error={errors.endYear}
           onChange={v => {
@@ -884,6 +886,7 @@ export const AchievementsModal = ({
         />
 
         <FormInput
+          type="date"
           label="Date"
           value={draft.date || ""}
           error={errors.date}

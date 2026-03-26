@@ -208,8 +208,8 @@ export const saveEducationEntry = async (data: Education): Promise<Education> =>
     institution: data.institution,
     degree: data.degree,
     fieldOfStudy: data.type,
-    startDate: data.startYear,
-    endDate: data.endYear,
+    startYear: data.startYear,
+    endYear: data.endYear,
     link: data.link
   };
 
