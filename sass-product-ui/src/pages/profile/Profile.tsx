@@ -60,7 +60,7 @@ const ErrorState = ({ message, onRetry }: { message: string; onRetry: () => void
 
 const Profile = () => {
   const { 
-    data, loading, saving, error, saveBasic, saveCollaboration, 
+    data,completionPercentage, loading, saving, error, saveBasic, saveCollaboration, 
     saveSkills, saveProject, saveExperience, saveEducation, saveAchievement, refetch 
   } = useProfile();
 
@@ -214,6 +214,7 @@ const Profile = () => {
             basic={safeData.basicDetails}
             formatDate={formatDate}
             formatLabel={formatLabel}
+            completionPercentage={completionPercentage}
           />
 
           <div className="lg:col-span-2 flex flex-col gap-5">
@@ -269,7 +270,6 @@ const Profile = () => {
               <EducationTab
                 educations={safeData.educations}
                 onAdd={() => openModal("education")}
-                onEdit={(id) => openModal("education", id)}
               />
             )}
             {activeTab === "achievements" && (

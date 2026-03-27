@@ -35,6 +35,23 @@ const getProfileId = (): string => {
 };
 
 // ─────────────────────────────────────────────────────────────
+// 1. GET FULL PROFILE COMPLETION
+// ─────────────────────────────────────────────────────────────
+export const profileCompletion = async () => {
+  try {
+    const profileID = getProfileId();
+    const response = await axios.get(`${BASE_URL}${API}${API_VERSION}/profile/${profileID}/completion`);
+    if(Util.isValidObject(response) && Util.isValidObject(response.data) && Util.isValidObject(response.data.data)) {
+      return response.data.data;
+    }
+
+  } catch(e) {
+    console.error(e);
+    throw new Error('Failed to get profile completion!!!!');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
 // 1. FETCH FULL PROFILE
 // ─────────────────────────────────────────────────────────────
 export const fetchProfile = async (): Promise<ProfileData> => {
