@@ -5,6 +5,7 @@ import {
   updateSkills, saveProjectEntry, saveExperienceEntry, type ProfileData,
   saveEducationEntry,
   saveAchievementEntry,
+  profileCompletion,
 } from '../services/profileService';
 import type { 
   BasicDetails, Collaboration, Skill, Project, 
@@ -13,6 +14,7 @@ import type {
 
 interface UseProfileReturn {
   data: ProfileData | null;
+  completionPercentage: number;
   loading: boolean;
   saving: boolean;
   error: string | null;
@@ -28,14 +30,23 @@ interface UseProfileReturn {
 
 const useProfile = (): UseProfileReturn => {
   const [data, setData] = useState<ProfileData | null>(null);
+  const [completionPercentage, setCompletionPercentage] = useState<number>(0);
   const[loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hasInitialized = useRef(false);
 
+  const refreshCompletion = async () => {
+    const compData = await profileCompletion();
+    if (compData && typeof compData.percentage === 'number') {
+      setCompletionPercentage(compData.percentage);
+    }
+  };
+
   const loadProfile = useCallback(async () => {
     setLoading(true); setError(null);
     try {
+      refreshCompletion();
       const result = await fetchProfile();
       setData(result);
     } catch (err) {
@@ -201,9 +212,9 @@ const useProfile = (): UseProfileReturn => {
   };
 
   return {
-    data, loading, saving, error,
+    data,completionPercentage, loading, saving, error,
     saveBasic, saveCollaboration, saveSkills, saveProject, 
-    saveExperience, saveEducation, saveAchievement, refetch: loadProfile,
+    saveExperience, saveEducation, saveAchievement, refetch: loadProfile
   };
 };
 

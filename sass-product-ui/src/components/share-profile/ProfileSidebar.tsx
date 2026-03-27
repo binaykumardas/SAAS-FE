@@ -7,9 +7,10 @@ interface ProfileSidebarProps {
   basic?:      BasicDetails; 
   formatDate:  (d: string) => string;
   formatLabel: (v: string) => string;
+  completionPercentage?: number;
 }
 
-const ProfileSidebar = ({ basic, formatDate }: ProfileSidebarProps) => {
+const ProfileSidebar = ({ basic, formatDate,completionPercentage = 0 }: ProfileSidebarProps) => {
   const displayName = basic?.firstName || basic?.lastName 
     ? `${basic.firstName ?? ''} ${basic.lastName ?? ''}`.trim()
     : 'New User';
@@ -57,12 +58,17 @@ const ProfileSidebar = ({ basic, formatDate }: ProfileSidebarProps) => {
       <div className="bg-surface border border-border rounded-2xl p-5 shadow-card">
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs font-bold uppercase tracking-wider text-text">Completion</p>
-          <span className="text-xs font-bold text-accent">78%</span>
+          <span className="text-xs font-bold text-accent">{completionPercentage}%</span>
         </div>
         <div className="w-full h-1.5 bg-raised rounded-full overflow-hidden mb-3">
-          <div className="h-full bg-accent rounded-full" style={{ width: '78%' }} />
+          <div 
+            className="h-full bg-accent rounded-full transition-all duration-500 ease-out" 
+            style={{ width: `${completionPercentage}%` }} 
+          />
         </div>
-        <p className="text-xs text-muted">Add more details to reach 100%</p>
+        <p className="text-xs text-muted">
+          {completionPercentage === 100 ? 'Profile completed!' : 'Add more details to reach 100%'}
+        </p>
       </div>
     </div>
   );

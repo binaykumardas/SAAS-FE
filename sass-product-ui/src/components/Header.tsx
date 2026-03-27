@@ -132,7 +132,7 @@ const Header = () => {
             </button>
 
             <Link to="/profile" className="w-8 h-8 rounded-full bg-accent-tint text-accent border border-accent/20 flex items-center justify-center font-bold text-sm shadow-sm hover:ring-2 hover:ring-accent hover:ring-offset-2 hover:ring-offset-surface transition-all mx-1">
-              B
+              BD
             </Link>
 
             <button 
