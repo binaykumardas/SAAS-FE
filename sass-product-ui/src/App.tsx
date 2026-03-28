@@ -10,6 +10,7 @@ import Profile from './pages/profile/Profile';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import FindConnections from './pages/connection/findConnection';
+import Home from './pages/home/Home';
 
 /**
  * ── Main Layout ──────────────────────────────────────────
@@ -45,6 +46,7 @@ const App = () => {
       {/* ── Main App Routes (WITH Header / Footer) ─────────── */}
       {/* Any route nested inside here gets the Header and Footer */}
       <Route element={<MainLayout />}>
+        <Route path="/" element={<Home />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/find-connection" element={<FindConnections />} />
         {/* <Route path="/projects" element={<Projects />} /> */}
@@ -52,7 +54,6 @@ const App = () => {
       </Route>
 
       {/* ── Default Redirects ──────────────────────────────── */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
 
     </Routes>
